@@ -9,13 +9,27 @@ process.env.DIST = path.join(__dirname, '../dist');
 process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public');
 
 let win: BrowserWindow | null;
+let splash: BrowserWindow | null;
+
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 const store = new Store();
+
+function createSplashWindow() {
+  splash = new BrowserWindow({
+    width: 500,
+    height: 300,
+    transparent: true,
+    frame: false,
+    alwaysOnTop: true
+  });
+  splash.loadFile('splash.html');
+}
 
 function createWindow() {
   win = new BrowserWindow({
     width: 800,
     height: 600,
+    show: false, // Initially hide the main window
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       nodeIntegration: false,
@@ -23,6 +37,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
     },
   });
+
   // Enable @electron/remote for the main window
   enable(win.webContents);
 
@@ -76,13 +91,20 @@ function createWindow() {
 
   // Workers --------------------------------------------
 
+
+
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {
     win.loadFile(path.join(process.env.DIST, 'index.html'));
   }
-}
+  win.setMenu(null);
+  win.once('ready-to-show', () => {
+    splash?.close(); // Close the splash screen
+    win?.show(); // Show the main window
+  });
 
+}
 
 
 app.on('window-all-closed', () => {
@@ -90,5 +112,5 @@ app.on('window-all-closed', () => {
 });
 
 initialize();
-app.whenReady().then(createWindow);
+app.whenReady().then(createSplashWindow).then(createWindow);
 

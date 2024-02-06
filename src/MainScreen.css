@@ -1,0 +1,22 @@
+.chat-container {
+  background-color: #18181b;
+  color: #fff; /* Assuming you want white text for visibility */
+  height: 100vh; /* Take full height of the viewport */
+  width: 100vw;
+  overflow-y: auto; /* Enable scrolling if content exceeds screen height */
+  display: flex;
+  flex-direction: column-reverse; /* Newest messages at the bottom */
+  padding: 10px; /* Add some padding around messages */
+}
+
+.message {
+  margin-bottom: 10px; /* Add space between messages */
+}
+
+.authorName {
+  font-weight: bold; /* Make author's name bold */
+}
+
+.messageContent {
+  margin-left: 10px; /* Indent message content slightly */
+}
