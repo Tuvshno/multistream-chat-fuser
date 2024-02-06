@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { initialize, enable } from '@electron/remote/main';
 import path from 'node:path';
 import Store from 'electron-store';
-
+import { spawn } from 'node:child_process';
 
 // The built directory structure
 process.env.DIST = path.join(__dirname, '../dist');
@@ -18,7 +18,7 @@ function createWindow() {
     height: 600,
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -58,7 +58,23 @@ function createWindow() {
 
   ipcMain.handle('startServer', async () => {
     console.log('server handling...')
+    const child = spawn('node', ['worker.mjs']);
+
+    child.stdout.on('data', (data) => {
+      console.log(`Child stdout:\n${data}`);
+    });
+
+    child.stderr.on('data', (data) => {
+      console.error(`Child stderr:\n${data}`);
+    });
+
+    child.on('exit', (code, signal) => {
+      console.log(`Child exited with code ${code} and signal ${signal}`);
+    });
+
   })
+
+  // Workers --------------------------------------------
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);

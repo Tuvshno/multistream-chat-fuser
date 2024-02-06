@@ -26,7 +26,7 @@
     "src",
     "electron",
     "./global.d.ts"
-  ],
+, "worker.js"  ],
   "references": [
     {
       "path": "./tsconfig.node.json"

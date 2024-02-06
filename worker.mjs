@@ -5,7 +5,7 @@ let activeBrowser; // Track the active Puppeteer browser
 let fetchInterval; // Track the interval ID for fetching chat data
 let isFirstFetch = true; // Flag to track the first fetch after a new connection
 
-console.log('Looking for Extension connection...')
+console.log('Looking for Client Connection...')
 
 async function getPageData(page) {
   const chatData = await page.evaluate(() => {
@@ -26,14 +26,14 @@ wss.on('connection', function connection(ws) {
   ws.on('message', function message(data) {
     console.log('received: %s', data);
   });
-  console.log('CONNECTED! Listening to chats...');
+  console.log('CONNECTED!');
 
   (async () => {
     if (fetchInterval) clearInterval(fetchInterval); // Clear existing fetch interval
     isFirstFetch = true; // Reset the flag for the new connection
 
     if (activeBrowser) {
-      console.log('Closing the old Puppeteer browser...');  
+      console.log('Closing the old Puppeteer browser...');
       await activeBrowser.close().catch(e => console.error('Error closing browser:', e)); // Error handling for browser close
       activeBrowser = null; // Reset the activeBrowser variable
     }
@@ -50,7 +50,7 @@ wss.on('connection', function connection(ws) {
     await page1.waitForSelector('#items.style-scope.yt-live-chat-item-list-renderer');
     await page2.waitForSelector('#items.style-scope.yt-live-chat-item-list-renderer');
 
-    console.log('Made a new connection');
+    console.log('Listening to chats...');
     fetchInterval = setInterval(async () => {
       try {
         if (!page1.isClosed() && !page2.isClosed()) {
@@ -63,8 +63,15 @@ wss.on('connection', function connection(ws) {
             isFirstFetch = false; // Set the flag to false after the first fetch
           } else {
             // Send data only after the first fetch
-            if (chatData1.length > 0) ws.send(JSON.stringify(chatData1));
-            if (chatData2.length > 0) ws.send(JSON.stringify(chatData2));
+            if (chatData1.length > 0) {
+              ws.send(JSON.stringify(chatData1))
+              console.log('Sent Message to Client')
+            }
+            if (chatData2.length > 0) {
+              ws.send(JSON.stringify(chatData2));
+              console.log('Sent Message to Client')
+            }
+
           }
         }
       } catch (e) {
