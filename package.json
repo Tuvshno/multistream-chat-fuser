@@ -11,8 +11,10 @@
   "dependencies": {
     "@electron/remote": "^2.0.11",
     "electron-store": "^8.1.0",
+    "puppeteer": "^22.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "websocket": "^1.0.34"
   },
   "devDependencies": {
     "@types/node": "^20.10.1",

@@ -1,3 +1,7 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+
+import { contextBridge, ipcRenderer } from 'electron'
+
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise(resolve => {
     if (condition.includes(document.readyState)) {
@@ -79,6 +83,19 @@ function useLoading() {
     },
   }
 }
+
+// ----------------------------------------------------------------------
+
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  setup: () => ipcRenderer.invoke('setup'),
+  saveURLS: (urls: string[]) => ipcRenderer.invoke('saveURLS', urls),
+  getUrls: () => ipcRenderer.invoke('getURLs'),
+  setSetup: (boolSetup: boolean) => ipcRenderer.invoke('setSetup', boolSetup),
+  setWindowSize: (width: number, height: number) => ipcRenderer.invoke('setWindowSize', width, height),
+  startServer: () => ipcRenderer.invoke('startServer')
+
+})
 
 // ----------------------------------------------------------------------
 
