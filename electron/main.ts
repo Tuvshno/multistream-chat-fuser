@@ -98,7 +98,7 @@ function createWindow() {
   } else {
     win.loadFile(path.join(process.env.DIST, 'index.html'));
   }
-  win.setMenu(null);
+  //win.setMenu(null);
   win.once('ready-to-show', () => {
     splash?.close(); // Close the splash screen
     win?.show(); // Show the main window

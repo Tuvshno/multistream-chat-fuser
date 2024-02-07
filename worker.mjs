@@ -77,6 +77,6 @@ wss.on('connection', function connection(ws) {
       } catch (e) {
         console.error('Error fetching page data:', e);
       }
-    }, 1000);
+    }, 100);
   })();
 });

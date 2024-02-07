@@ -31,6 +31,7 @@ const MainScreen: React.FC = () => {
         webSocket.onmessage = (event) => {
             console.log("Message from server:", event.data);
             const newMessages: Message[] = JSON.parse(event.data);
+            console.log(newMessages)
             setChat((prevChat) => [...prevChat, ...newMessages]);
         };
 
@@ -47,6 +48,7 @@ const MainScreen: React.FC = () => {
             webSocket.close();
         };
     }, []);
+
     useEffect(() => {
         scrollToBottom(); // Scroll to the bottom every time the chat array changes
     }, [chat]);
@@ -56,11 +58,19 @@ const MainScreen: React.FC = () => {
             {chat.map((message) => (
                 <div key={message.id} className="message">
                     <div className="authorName">{message.authorName}</div>
+                    <span>:</span>
                     <div className="messageContent">{message.message}</div>
                 </div>
             ))}
             <div ref={chatEndRef} /> {/* Dummy div to act as the scroll target */}
+            <div className='message-input-container'>
+                <input className='message-input' />
+            </div>
+            <div className='undermessage-container'>
+                <button className='message-send-button'>Chat</button>
+            </div>
         </div>
+
     );
 };
 

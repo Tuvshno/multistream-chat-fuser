@@ -5,12 +5,20 @@
   width: 100vw;
   overflow-y: auto; /* Enable scrolling if content exceeds screen height */
   display: flex;
-  flex-direction: column-reverse; /* Newest messages at the bottom */
-  padding: 10px; /* Add some padding around messages */
+  flex-direction: column;  /* Newest messages at the bottom */
+  justify-content: flex-end; /* Align children to the bottom */
+
+   /* Add some padding around messages */
+  font-size: 0.9rem;
 }
 
 .message {
-  margin-bottom: 10px; /* Add space between messages */
+  display: flex;
+  padding: 5px 10px ;
+}
+
+.message:hover {
+  background-color: rgb(115, 115, 124);
 }
 
 .authorName {
@@ -18,5 +26,48 @@
 }
 
 .messageContent {
-  margin-left: 10px; /* Indent message content slightly */
+  flex: 1; /* Allow the item to grow and fill the available space */
+  margin-left: 5px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: left; /* Ensure text starts from the left */
+
+}
+
+.message-input-container {
+  margin-top: 10px;
+  padding: 0px 10px;
+}
+
+.message-input {
+  width: 100%;
+  height: 35px;
+  border-radius: 4px;
+  background-color: #18181b;
+  border: 1px solid #ffffff; /* Keep the border width constant */
+  padding: 0 10px; /* Original padding */
+  color: #ffffff; /* Set the text color to white for visibility */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+
+}
+
+.message-input:focus {
+  outline: none; /* Remove the default focus outline */
+  border-color: transparent;
+  box-shadow: 0 0 0 2px #9147ff; /* Add a purple glow effect */
+}
+
+.undermessage-container {
+  display: flex; /* Make it a flex container */
+  justify-content: flex-end; /* Align items to the right */
+  align-items: center; /* Center items vertically, optional */
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.message-send-button {
+  background-color: #9147ff;  
+  color: white;
+  margin-right: 10px;
 }
