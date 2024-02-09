@@ -1,18 +1,51 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './MainScreen.css';
+import TwitchBadge from './assets/Twitch_Badge_18.png';
+import YouTubeBadge from './assets/YT_Badge_18.png';
 
 interface Message {
-    id: string; // Assuming each message has a unique ID
+    platform: string;
+    id: string;
     authorName: string;
     message: string;
+    imgSrcs: string[];
+    authorColor: string;
 }
 
 const MainScreen: React.FC = () => {
     const [chat, setChat] = useState<Message[]>([]);
-    const chatEndRef = useRef<null | HTMLDivElement>(null); // Ref for the dummy div at the end of the chat
+    const chatEndRef = useRef<null | HTMLDivElement>(null);
+    const chatContainerRef = useRef<null | HTMLDivElement>(null);
+
+    const renderMessageContent = (message: string) => {
+        // Regular expression to match URLs
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        // Split message by URLs and keep the URLs in the output array
+        const parts = message.split(urlRegex);
+
+        return parts.map((part, index) => {
+            if (part.match(urlRegex)) {
+                // If the part is a URL, render it as an image
+                return <img key={index} src={part} className='badge' alt="Embedded Content" style={{ width: '32px', height: '32px' }} />;
+            } else {
+                // If the part is text, render it as text
+                return part;
+            }
+        });
+    };
+    // Function to check if the user is at the bottom of the chat
+    const isScrolledToBottom = () => {
+        if (!chatContainerRef.current) return false;
+
+        const { scrollTop, clientHeight, scrollHeight } = chatContainerRef.current;
+        // Check if the user is at the bottom of the chat (with some tolerance for better UX)
+        return scrollTop + clientHeight + 200 >= scrollHeight;
+    };
 
     const scrollToBottom = () => {
-        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (isScrolledToBottom()) {
+            chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
     };
 
     useEffect(() => {
@@ -50,19 +83,29 @@ const MainScreen: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        scrollToBottom(); // Scroll to the bottom every time the chat array changes
+        scrollToBottom(); // Scroll to the bottom conditionally
     }, [chat]);
 
     return (
         <div className='chat-container'>
-            {chat.map((message) => (
-                <div key={message.id} className="message">
-                    <div className="authorName">{message.authorName}</div>
-                    <span>:</span>
-                    <div className="messageContent">{message.message}</div>
-                </div>
-            ))}
-            <div ref={chatEndRef} /> {/* Dummy div to act as the scroll target */}
+            <div ref={chatContainerRef} className='chat-message-container'>
+                {chat.map((message, index) => (
+                    <div key={index} className="message">
+                        <div className='message-info'>
+                            {message.platform === 'YouTube' ? <div className='badge'><img src={YouTubeBadge} alt="YouTube Badge" /></div> : <div className='badge'><img src={TwitchBadge} alt="Twitch Badge" /></div>}
+                            {message?.imgSrcs.map((badge, badgeIndex) => (
+                                <div key={badgeIndex} className="badge">
+                                    <img src={badge} alt="Chat Badge" />
+                                </div>
+                            ))}
+                            <div className="authorName" style={{ color: message.authorColor }}>{message.authorName}</div>
+                            <span>:</span>
+                        </div>
+                        <span className="messageContent">{renderMessageContent(message.message)}</span>
+                    </div>
+                ))}
+                <div ref={chatEndRef} />
+            </div>
             <div className='message-input-container'>
                 <input className='message-input' />
             </div>
@@ -70,7 +113,6 @@ const MainScreen: React.FC = () => {
                 <button className='message-send-button'>Chat</button>
             </div>
         </div>
-
     );
 };
 

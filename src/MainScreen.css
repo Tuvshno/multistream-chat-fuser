@@ -1,20 +1,35 @@
+.container {
+  height: 100vh; /* Full viewport height */
+  width: 100%; /* Adjust width as necessary */
+}
+
 .chat-container {
   background-color: #18181b;
   color: #fff; /* Assuming you want white text for visibility */
   height: 100vh; /* Take full height of the viewport */
   width: 100vw;
-  overflow-y: auto; /* Enable scrolling if content exceeds screen height */
   display: flex;
   flex-direction: column;  /* Newest messages at the bottom */
   justify-content: flex-end; /* Align children to the bottom */
-
+  overflow-y: auto; 
    /* Add some padding around messages */
   font-size: 0.9rem;
 }
 
+.chat-message-container {
+  flex: 1; /* This will allow the container to fill the available space */
+  overflow-y: auto; /* Enable vertical scrolling when necessary */
+  margin-bottom: 10px; /* Space for the input container */
+  padding: 0 10px; /* Padding inside the message container */
+  justify-content: flex-end; /* Align children to the bottom */
+
+}
+
 .message {
   display: flex;
-  padding: 5px 10px ;
+  /* align-items: center; This already centers children vertically */
+  flex-direction: row; /* Ensure this is set to row for horizontal layout */
+  padding: 5px 15px;
 }
 
 .message:hover {
@@ -23,16 +38,21 @@
 
 .authorName {
   font-weight: bold; /* Make author's name bold */
+  letter-spacing: 0.3px;
+  white-space: nowrap; 
+}
+
+.message-info {
+  display: inline-flex;
+  align-items: baseline;
+  background-color: #9147ff;
 }
 
 .messageContent {
-  flex: 1; /* Allow the item to grow and fill the available space */
   margin-left: 5px;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: break-all;
   text-align: left; /* Ensure text starts from the left */
-
+	align-items: flex-start;
 }
 
 .message-input-container {
@@ -70,4 +90,30 @@
   background-color: #9147ff;  
   color: white;
   margin-right: 10px;
+}
+
+.badge {
+  margin-bottom: 0px;
+  margin-right: 3px;
+  align-self: start;
+}
+
+.badge img {
+  max-width: 18px;
+  max-height: 18px;
+}
+
+
+.chat-message-container::-webkit-scrollbar {
+  width: 8px; /* width of the entire scrollbar */
+}
+
+.chat-message-container::-webkit-scrollbar-track {
+  background: #18181b; /* color of the tracking area */
+}
+
+.chat-message-container::-webkit-scrollbar-thumb {
+  background-color: #343434; /* color of the scroll thumb */
+  border-radius: 4px; /* roundness of the scroll thumb */
+  border: 2px solid #18181b; /* creates padding around scroll thumb */
 }
