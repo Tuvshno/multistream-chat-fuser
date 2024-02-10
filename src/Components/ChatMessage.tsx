@@ -1,53 +1,68 @@
-import './ChatMessage.css'
-import TwitchBadge from './assets/Twitch_Badge_18.png';
-import YouTubeBadge from './assets/YT_Badge_18.png';
+import { MessageModel } from '../utils/models'
+import YouTubeBadge from '../assets/YT_Badge_18.png'
+import TwitchBadge from '../assets/Twitch_Badge_18.png'
+import './css/ChatMessage.css'
+
+type MessageProps = {
+    messageInfo: MessageModel
+} & React.ComponentPropsWithRef<'div'>
 
 const ChatMessage = ({
-  message: { platform, imgSrcs, authorName, message },
-  className,
-}) => {
-  const Badges = author.badges.map((bg, i) => (
-    <img
-      key={i}
-      src={`/badges/${bg}.png`}
-      className="mr-2 w-4 h-4 self-center"
-    />
-  ))
+    messageInfo: { platform, authorName, message, imgSrcs, authorColor },
+    className,
+}: MessageProps) => {
+    const Badges = imgSrcs.map((bg, i) => (
+        <img
+            key={i}
+            src={bg}
+            className="message-badge"
+        />
+    ))
 
-  const renderMessageContent = (message: string) => {
-    // Regular expression to match URLs
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    // Split message by URLs and keep the URLs in the output array
-    const parts = message.split(urlRegex);
+    const Username = (
+        <span className="message-username" style={{ color: authorColor }}>
+            {authorName}
+        </span>
+    )
 
-    return parts.map((part, index) => {
-      if (part.match(urlRegex)) {
-        // If the part is a URL, render it as an image
-        return <img key={index} src={part} className='badge' alt="Embedded Content" style={{ width: '32px', height: '32px' }} />;
-      } else {
-        // If the part is text, render it as text
-        return part;
-      }
-    });
-  };
-  
-  return (
-    <div
-      className={`text-[15px] py-1 px-2 rounded hover:bg-gray-500/30 leading-6 ${className}`}
-    >
-      <div className="inline-flex items-baseline">
-        {Badges}
-        {platform === 'YouTube' ? <div ><img src={YouTubeBadge} alt="YouTube Badge" /></div> : <div><img src={TwitchBadge} alt="Twitch Badge" /></div>}
-        {imgSrcs.map((badge, badgeIndex) => (
-          <div key={badgeIndex}>
-            <img src={badge} alt="Chat Badge" />
-          </div>
-        ))}
-        {authorName}
-      </div>
-      <span className="ml-3 break-words">{renderMessageContent(message)}</span>
-    </div>
-  )
+    const renderMessageContent = (message: string) => {
+        // Regular expression to match URLs
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        // Split message by URLs and keep the URLs in the output array
+        const parts = message.split(urlRegex);
+
+        return (
+            <span className="message">
+                {parts.map((part, index) => {
+                    if (part.match(urlRegex)) {
+                        // If the part is a URL, render it as an image
+                        return <img key={index} className="message-emote" src={part} />;
+                    } else {
+                        // If the part is text, render it as text
+                        return part;
+                    }
+                })}
+            </span>
+        )
+    };
+
+
+    return (
+        <div
+            className={`message-container ${className}`}
+        >
+            <div className="chat-message-info">
+                {platform === 'YouTube' ?
+                    <img src={YouTubeBadge} alt="YouTube Badge" className='message-badge' /> :
+                    <img src={TwitchBadge} alt="Twitch Badge" className='message-badge' />
+                }
+                {Badges}
+                {Username}
+            </div>
+            <span>:</span>
+            <span >{renderMessageContent(message)}</span>
+        </div>
+    )
 }
 
 export default ChatMessage

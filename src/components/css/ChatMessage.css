@@ -1,0 +1,51 @@
+.message-badge {
+  margin-right: 0.25rem; /* Equivalent to mr-2 */
+  width: 1rem; /* Equivalent to w-4 */
+  height: 1rem; /* Equivalent to h-4 */
+  align-self: center; /* Equivalent to self-center, works within a flex or grid container */
+}
+
+.message-emote {
+  margin-right: 0.25rem; /* Equivalent to mr-2 */
+  width: 1.5rem; /* Equivalent to w-4 */
+  height: 1.5rem; /* Equivalent to h-4 */
+  align-self: center;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.message-container {
+  font-size: 14px; /* Equivalent to text-[15px] */
+  padding: 0.25rem 0.5rem; /* Equivalent to py-1 and px-2 */
+  border-radius: 0.25rem; /* Equivalent to rounded */
+  line-height: 1.5rem; /* Equivalent to leading-6 */
+}
+
+.message-container:hover {
+  background-color: rgba(107, 114, 128, 0.3); /* Equivalent to hover:bg-gray-500/30 */
+}
+
+.chat-message {
+  margin-bottom: 0rem; 
+}
+
+.chat-message-info {
+  display: inline-flex; /* Equivalent to inline-flex */
+  align-items: baseline; /* Equivalent to items-baseline */
+}
+
+.chat-message-content {
+  margin-left: 0.5rem; /* Equivalent to ml-3 */
+  word-wrap: break-word; /* Equivalent to break-words */
+  display: inline; 
+}
+
+.message {
+  word-wrap: break-word; /* Equivalent to break-words */
+  margin-left: 0.5rem; /* Equivalent to ml-3 */
+
+}
+
+.message-username {
+  font-weight: 700; /* Equivalent to font-semibold */
+}
