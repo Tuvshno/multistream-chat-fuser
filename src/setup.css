@@ -2,13 +2,14 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f7f7f7;
   color: #333;
-  line-height: 1.6;
-  height: 100vh;
   margin: 0;
+
+  /* line-height: 1.6;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  text-align: center;
+  text-align: center; */
 }
 
 /* Style the container */
@@ -23,7 +24,7 @@ body {
 }
 
 /* Style inputs */
-input[type="text"] {
+.setup-input {
   width: calc(100% - 20px); /* Full width minus padding */
   padding: 10px;
   margin-bottom: 20px; /* Space between inputs */
