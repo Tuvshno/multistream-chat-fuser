@@ -1,0 +1,30 @@
+
+
+.message-label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon-style {
+  width: 1rem; /* Equivalent to w-4 */
+  height: 1rem; /* Equivalent to h-4 */
+  margin-right: 0.5rem; /* Equivalent to mr-2 */
+}
+
+.chat-alert-container {
+  width: 16rem; /* Equivalent to w-64 */
+  display: inline-flex;
+  justify-content: center;
+  padding: 0.5rem 1rem; /* Equivalent to px-4 and py-2 */
+  border-radius: 0.5rem; /* Assumed value for rounded-lg */
+  background-color: rgba(0, 0, 0, 0.8); /* Equivalent to bg-black/80 */
+  cursor: pointer;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 7rem;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 9999;
+  color: white;
+}

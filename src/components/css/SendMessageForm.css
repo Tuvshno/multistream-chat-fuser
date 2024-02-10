@@ -1,0 +1,41 @@
+.send-message-form {
+  margin-top: 1rem;
+}
+
+.send-message-form-container {
+  position: relative; /* Equivalent to the Tailwind class `relative` */
+}
+
+.send-message-form-input {
+  width: 100%; /* Equivalent to w-full */
+  /* padding: 0.5rem; */
+  /* border-radius: 0.25rem;
+  background-color: #4A5568; */
+  height: 35px;
+  border-radius: 4px;
+  background-color: #18181b;
+  /* border-color: transparent; */
+  border: 1px solid #67676B;
+  padding: 0 10px; /* Original padding */
+  color: #ffffff; /* Set the text color to white for visibility */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+.send-message-form-input:hover {
+  outline: 2px solid #67676B;
+}
+
+.send-message-form-input:focus {
+  outline: none; /* Remove the default focus outline */
+  border-color: transparent;
+  box-shadow: 0 0 0 2px #9147ff; /* Add a purple glow effect */
+}
+
+.send-message-form-button {
+  background-color: #9147FF; /* Close equivalent to bg-purple-600 */
+  padding: 0.35rem 0.6rem; /* Equivalent to p-2 */
+  float: right; /* Equivalent to float-right */
+  margin-top: 0.5rem; /* Equivalent to mt-2 */
+  border-radius: 0.375rem; /* Assumed value for rounded-md */
+  color: white;
+  font-size: 14px;
+}
