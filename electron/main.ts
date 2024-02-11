@@ -51,14 +51,14 @@ function createWindow() {
     return store.get('setup', true);
   })
 
-  ipcMain.handle('setSetup', async (event, boolSetup) => {
+  ipcMain.handle('setSetup', async (_event, boolSetup) => {
     console.log(boolSetup)
     store.set('setup', boolSetup);
     // win?.webContents.send('setupChanged', boolSetup);
 
   })
 
-  ipcMain.handle('saveURLS', async (event, urls) => {
+  ipcMain.handle('saveURLS', async (_event, urls) => {
     console.log(urls)
     store.set('urls', urls);
   });
@@ -67,13 +67,19 @@ function createWindow() {
     return store.get('urls', []); // Assuming 'urls' is the key in electron-store
   });
 
-  ipcMain.handle('setWindowSize', async (event, width, height) => {
+  ipcMain.handle('setWindowSize', async (_event, width, height) => {
     win?.setSize(width, height);
   });
 
   ipcMain.handle('startServer', async () => {
     console.log('server handling...')
-    const child = spawn('node', ['worker.mjs']);
+    const urls = store.get('urls')
+    const child = spawn('node', ['worker.mjs'], {
+      env: {
+        ...process.env, // Include existing environment variables
+        USER_URLS: JSON.stringify(urls)
+      }
+    });
 
     child.stdout.on('data', (data) => {
       console.log(`Child stdout:\n${data}`);
@@ -89,6 +95,12 @@ function createWindow() {
 
   })
 
+  ipcMain.handle('open-settings-window', async () => {
+    console.log('setup updated');
+    store.set('setup', true);
+    win?.webContents.send('setup-updated', true);
+  });
+
   // Workers --------------------------------------------
 
 
@@ -98,7 +110,7 @@ function createWindow() {
   } else {
     win.loadFile(path.join(process.env.DIST, 'index.html'));
   }
-  //win.setMenu(null);
+  win.setMenu(null);
   win.once('ready-to-show', () => {
     splash?.close(); // Close the splash screen
     win?.show(); // Show the main window

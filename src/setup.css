@@ -1,35 +1,61 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f7f7f7;
-  color: #333;
-  margin: 0;
+  background-color: #18181B; /* Dark background for the whole page */
+  color: #E4E4E7; /* Lighter text color for better readability */
+ 
+}
 
-  /* line-height: 1.6;
+.setup-container {
+  width: 100vw; /* Increased from 90% to 95% */
   height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center; */
+  flex-direction: column;
+  padding: 2rem;
+  background-color: #242429;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* Style the container */
-.container {
-  width: 100%;
-  max-width: 400px;
-  padding: 20px;
-  margin: auto;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,.08);
+.setup-header {
+  color: #FFFFFF; /* Pure white for the header for emphasis */
+  margin-bottom: 2rem; /* More space above the first input field */
 }
 
-/* Style inputs */
-.setup-input {
-  width: calc(100% - 20px); /* Full width minus padding */
-  padding: 10px;
-  margin-bottom: 20px; /* Space between inputs */
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
+.setup-url-input, .setup-button {
+  padding: 0.75rem;
+  margin-top: 1rem;
+  background-color: #37373D; /* Darker shade for input and button backgrounds */
+  border: 1px solid #52525B; /* Slight border to define edges */
+  border-radius: 8px;
+  color: #E4E4E7; /* Light text color for contrast */
+  font-size: 1rem;
 }
 
+.setup-url-input:focus {
+  outline: none;
+  border-color: #8B5CF6; /* Highlight color for focused input */
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5); /* Soft glow effect */
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.setup-button {
+  cursor: pointer; /* Indicate that the buttons are clickable */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.setup-button:hover {
+  background-color: #4C4C52; /* Slightly lighter shade on hover for buttons */
+}
+
+/* Optional: Add a little margin at the bottom of the last button */
+.setup-button:last-child {
+  margin-bottom: 1rem;
+}
+
+.save {
+  background-color: #735cf6;
+}
+
+.save:hover {
+  background-color: #674dff;
+}

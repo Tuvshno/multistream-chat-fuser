@@ -1,20 +1,28 @@
-import react, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import SetupScreen from './SetupScreen';
 import MainScreen from './MainScreen';
 
-
-
 const App = () => {
-  // Storing first run for initial Setup
   const [setup, setSetup] = useState<boolean | null>(null);
 
-  // Get the setup value for initialization
   useEffect(() => {
+    // Get the initial setup state
     window.electronAPI.setup().then(setSetup);
+
+    // Define a function to handle updates to the setup state
+    const handleSetupUpdate = (updatedSetup: boolean) => {
+      setSetup(updatedSetup);
+    };
+
+    // Listen for 'setup-updated' messages from the main process
+    window.electronAPI.onSetupUpdated(handleSetupUpdate);
+
+    // Cleanup the listener when the component unmounts
+    return () => {
+      window.electronAPI.removeSetupUpdatedListener(handleSetupUpdate);
+    };
   }, []);
 
-
-  // If firstRun is null, we're still waiting for the result
   if (setup === null) {
     return <div>Loading...</div>;
   }
@@ -22,4 +30,4 @@ const App = () => {
   return setup ? <SetupScreen setSetup={setSetup} /> : <MainScreen />;
 };
 
-export default App
+export default App;
