@@ -62,6 +62,7 @@ const ChatMessage = ({
             <span>:</span>
             <span >{renderMessageContent(message)}</span>
         </div>
+
     )
 }
 

@@ -33,9 +33,29 @@
 .send-message-form-button {
   background-color: #9147FF; /* Close equivalent to bg-purple-600 */
   padding: 0.35rem 0.6rem; /* Equivalent to p-2 */
-  float: right; /* Equivalent to float-right */
-  margin-top: 0.5rem; /* Equivalent to mt-2 */
   border-radius: 0.375rem; /* Assumed value for rounded-md */
   color: white;
   font-size: 14px;
+}
+
+.settings-button {
+  background-color: transparent;
+  padding: 0;
+  color: white;
+  transition: color 0.15s ease;
+  margin-right: 1rem;
+}
+
+.settings-button:hover {
+  color: #9147FF;
+}
+
+.buttons {
+  width: 100%;
+  float: right; /* Equivalent to float-right */
+  justify-items: end;
+  display: flex;
+  justify-content: end;
+  margin-top: 0.5rem; /* Equivalent to mt-2 */
+
 }

@@ -4,6 +4,8 @@ import { WebSocketServer } from 'ws';
 let activeBrowser; // Track the active Puppeteer browser
 let fetchInterval; // Track the interval ID for fetching chat data
 let isFirstFetch = true; // Flag to track the first fetch after a new connection
+// Inside worker.mjs
+
 
 console.log('Looking for Client Connection...')
 
@@ -27,7 +29,7 @@ async function getYouTubePageData(page) {
 
       // Select the message element and process its child nodes
       const messageElement = item.querySelector('#message');
-      const messageParts = messageElement ? Array.from(messageElement.childNodes).map(processNode).filter(part => part.length > 0).join(' ') : 'No message';
+      const messageParts = messageElement ? Array.from(messageElement.childNodes).map(processNode).filter(part => part.length > 0).join(' ') : 'Message Deleted';
 
       const authorName = item.querySelector('#author-name')?.textContent.trim() || 'Anonymous';
       const authorColor = "rgb(255, 94, 94)"; // Default color for YouTube authors
@@ -46,6 +48,8 @@ async function getTwitchPageData(page) {
     // Hide elements with data-test-selector="user-notice-line" instead of removing them
     const userNotices = Array.from(document.querySelectorAll('[data-test-selector="user-notice-line"]:not(.processed)'));
     userNotices.forEach(notice => {
+      console.log(notice.textContent.trim());
+
       notice.style.display = 'none';
       notice.classList.add('processed'); // Mark as processed
     });
@@ -66,9 +70,12 @@ async function getTwitchPageData(page) {
         return '';
       };
 
-      // Use optional chaining to avoid TypeError when the element is not found
+      // Check for "replying" message
+      const replyingElement = item.querySelector('.CoreText-sc-1txzju1-0.cCvSAC'); // Adjust the selector to target the "replying" message element
+      const replyingMessage = replyingElement ? replyingElement.textContent.trim() : '';
+
       const messageElement = item.querySelector('[data-a-target="chat-line-message-body"]');
-      const messageParts = messageElement ? Array.from(messageElement.childNodes).map(processNode).filter(part => part.length > 0).join(' ') : 'No message';
+      const messageParts = messageElement ? Array.from(messageElement.childNodes).map(processNode).filter(part => part.length > 0).join(' ') : 'Message Deleted';
 
       const authorElement = item.querySelector('.chat-author__display-name');
       const authorName = authorElement?.textContent.trim() || 'Anonymous';
@@ -83,6 +90,7 @@ async function getTwitchPageData(page) {
   });
   return chatData;
 }
+
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -107,13 +115,16 @@ wss.on('connection', function connection(ws) {
     const page2 = await activeBrowser.newPage();
     const page3 = await activeBrowser.newPage();
 
+    // eslint-disable-next-line no-undef
+    const USER_URLS = JSON.parse(process.env.USER_URLS);
+    console.log(USER_URLS)
 
     await page1.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
     await page2.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
     await page3.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
-    await page1.goto('https://www.youtube.com/live_chat?is_popout=1&v=navbOf3knfs');
-    await page2.goto('https://www.youtube.com/live_chat?is_popout=1&v=jfKfPfyJRdk');
-    await page3.goto('https://www.twitch.tv/popout/jynxzi/chat?popout=')
+    await page1.goto(USER_URLS[0]);
+    await page2.goto(USER_URLS[1]);
+    await page3.goto(USER_URLS[2])
     await page1.waitForSelector('#items.style-scope.yt-live-chat-item-list-renderer');
     await page2.waitForSelector('#items.style-scope.yt-live-chat-item-list-renderer');
     await page3.waitForSelector('.chat-scrollable-area__message-container');
@@ -135,15 +146,15 @@ wss.on('connection', function connection(ws) {
             // Send data only after the first fetch
             if (chatData1.length > 0) {
               ws.send(JSON.stringify(chatData1))
-              console.log('Sent Message to Client')
+              // console.log('Sent Message to Client')
             }
             if (chatData2.length > 0) {
               ws.send(JSON.stringify(chatData2));
-              console.log('Sent Message to Client')
+              // console.log('Sent Message to Client')
             }
-            if(chatData3.length > 0) {
+            if (chatData3.length > 0) {
               ws.send(JSON.stringify(chatData3));
-              console.log('Sent Message to Client')
+              // console.log('Sent Message to Client')
             }
 
           }

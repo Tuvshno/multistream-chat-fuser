@@ -93,8 +93,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getUrls: () => ipcRenderer.invoke('getURLs'),
   setSetup: (boolSetup: boolean) => ipcRenderer.invoke('setSetup', boolSetup),
   setWindowSize: (width: number, height: number) => ipcRenderer.invoke('setWindowSize', width, height),
-  startServer: () => ipcRenderer.invoke('startServer')
-
+  startServer: () => ipcRenderer.invoke('startServer'),
+  openSettingsWindow: () => ipcRenderer.invoke('open-settings-window'),
+  onSetupUpdated: (func: (updatedSetup: boolean) => void) => {
+    ipcRenderer.on('setup-updated', (_event, updatedSetup: boolean) => func(updatedSetup));
+  },
+  removeSetupUpdatedListener: (func: (updatedSetup: boolean) => void) => {
+    ipcRenderer.removeListener('setup-updated', func);
+  },
 })
 
 // ----------------------------------------------------------------------

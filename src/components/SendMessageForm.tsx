@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './css/SendMessageForm.css'
+import { IoSettingsOutline } from "react-icons/io5";
 
 type SendMessageFormProps = {
     onSend: (message: string) => void
@@ -23,6 +24,11 @@ const SendMessageForm = ({ onSend }: SendMessageFormProps) => {
         setMessage('')
     }
 
+const openSettingsWindow = () => {
+    console.log('sending message to open settings')
+    window.electronAPI.openSettingsWindow();
+}
+
     return (
         <form className="send-message-form" onSubmit={handleSubmit}>
             <div className="send-message-form-container">
@@ -34,13 +40,19 @@ const SendMessageForm = ({ onSend }: SendMessageFormProps) => {
                     placeholder="Send a chat message"
                 />
             </div>
+            <div className='buttons'>
+                <button className='settings-button' onClick={openSettingsWindow}>
+                    <IoSettingsOutline />
+                    </button>
 
-            <button
-                className="send-message-form-button"
-                type="submit"
-            >
-                Chat
-            </button>
+                <button
+                    className="send-message-form-button"
+                    type="submit"
+                >
+                    Chat
+                </button>
+            </div>
+
         </form>
     )
 }

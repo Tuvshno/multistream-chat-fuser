@@ -42,7 +42,7 @@
 
 .message {
   word-wrap: break-word; /* Equivalent to break-words */
-  margin-left: 0.5rem; /* Equivalent to ml-3 */
+  margin-left: 0.25rem; /* Equivalent to ml-3 */
 
 }
 

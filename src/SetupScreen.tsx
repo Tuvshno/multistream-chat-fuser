@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import './setup.css'
 
-const SetupScreen = ({ setSetup }) => {
+type SetSetupFunction = (value: boolean) => void; // Example function type that takes a boolean and returns void
+
+// Define the props for the SetupScreen component
+interface SetupScreenProps {
+    setSetup: SetSetupFunction;
+}
+
+const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) =>{
     const [urls, setUrls] = useState(['']);
 
     // Set up urls 
@@ -40,19 +47,20 @@ const SetupScreen = ({ setSetup }) => {
     }
 
     return (
-        <div>
-            <h2>Setup</h2>
+        <div className='setup-container'>
+            <h2 className='setup-header'>Setup</h2>
             {urls.map((url, index) => (
                 <input
                     key={index}
                     type="text"
                     value={url}
+                    className='setup-url-input'
                     onChange={(e) => handleUrlChange(index, e.target.value)}
                 />
             ))}
-            <button onClick={addNewUrlField}>Add Another URL</button>
-            <button onClick={handleSubmit}>Save</button>
-            <button onClick={goToMain}>Go to Main Screen</button>
+            <button onClick={addNewUrlField} className='setup-button'>Add Another URL</button>
+            <button onClick={goToMain} className='setup-button'>Go to Main Screen</button>
+            <button onClick={handleSubmit} className='setup-button save'>Save</button>
 
         </div>
     );
