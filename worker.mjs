@@ -106,62 +106,76 @@ wss.on('connection', function connection(ws) {
 
     if (activeBrowser) {
       console.log('Closing the old Puppeteer browser...');
-      await activeBrowser.close().catch(e => console.error('Error closing browser:', e)); // Error handling for browser close
+      await activeBrowser.close().catch(e => console.error('Error closing browser:', e));
       activeBrowser = null; // Reset the activeBrowser variable
     }
 
-    activeBrowser = await puppeteer.launch({ headless: "new" });
-    const page1 = await activeBrowser.newPage();
-    const page2 = await activeBrowser.newPage();
-    const page3 = await activeBrowser.newPage();
+    activeBrowser = await puppeteer.launch({ headless: true });
+    const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
 
     // eslint-disable-next-line no-undef
     const USER_URLS = JSON.parse(process.env.USER_URLS);
-    console.log(USER_URLS)
+    console.log(USER_URLS);
 
-    await page1.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
-    await page2.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
-    await page3.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
-    await page1.goto(USER_URLS[0]);
-    await page2.goto(USER_URLS[1]);
-    await page3.goto(USER_URLS[2])
-    await page1.waitForSelector('#items.style-scope.yt-live-chat-item-list-renderer');
-    await page2.waitForSelector('#items.style-scope.yt-live-chat-item-list-renderer');
-    await page3.waitForSelector('.chat-scrollable-area__message-container');
+    const selectors = [
+      '#items.style-scope.yt-live-chat-item-list-renderer',
+      '#items.style-scope.yt-live-chat-item-list-renderer',
+      '.chat-scrollable-area__message-container'
+    ];
+
+    // Set user agents and navigate to URLs
+    for (let i = 0; i < pages.length; i++) {
+      await pages[i].setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
+      await pages[i].goto(USER_URLS[i]).catch(e => console.error(`Error navigating to ${USER_URLS[i]}:`, e));
+    }
+
+    // Attempt to wait for selectors and handle failures
+    for (let i = 0; i < pages.length; i++) {
+      try {
+        await pages[i].waitForSelector(selectors[i]);
+      } catch (e) {
+        console.error(`Failed to find selector ${selectors[i]} on page ${i + 1}:`, e);
+        ws.send(JSON.stringify({ type: 'error', errorUrl: USER_URLS[i] }));
+
+        // Remove the failed page from the array
+        pages.splice(i, 1);
+        selectors.splice(i, 1);
+        USER_URLS.splice(i, 1);
+        i--; // Adjust index since we removed an item
+      }
+    }
 
     console.log('Listening to chats...');
+    ws.send(JSON.stringify({
+      type: 'success',
+      urls: USER_URLS // This will contain only the URLs of the pages that passed the waitForSelector check
+    }));
+
     fetchInterval = setInterval(async () => {
       try {
-        if (!page1.isClosed() && !page2.isClosed()) {
-          let chatData1 = await getYouTubePageData(page1);
-          let chatData2 = await getYouTubePageData(page2);
-          let chatData3 = await getTwitchPageData(page3);
-          chatData1 = chatData1.reverse();
-          chatData2 = chatData2.reverse();
-          chatData3 = chatData3.reverse();
-
-          if (isFirstFetch) {
-            isFirstFetch = false; // Set the flag to false after the first fetch
+        const chatDataPromises = pages.map((page, index) => {
+          if (selectors[index].includes('yt-live-chat-item-list-renderer')) {
+            return getYouTubePageData(page);
           } else {
-            // Send data only after the first fetch
-            if (chatData1.length > 0) {
-              ws.send(JSON.stringify(chatData1))
-              // console.log('Sent Message to Client')
-            }
-            if (chatData2.length > 0) {
-              ws.send(JSON.stringify(chatData2));
-              // console.log('Sent Message to Client')
-            }
-            if (chatData3.length > 0) {
-              ws.send(JSON.stringify(chatData3));
-              // console.log('Sent Message to Client')
-            }
-
+            return getTwitchPageData(page);
           }
-        }
+        });
+
+        const chatDataArrays = await Promise.all(chatDataPromises);
+
+        chatDataArrays.forEach((chatData, index) => {
+          chatData = chatData.reverse();
+          if (!isFirstFetch && chatData.length > 0) {
+            ws.send(JSON.stringify({ type: 'chatMessage', url: USER_URLS[index], data: chatData }));
+          }
+        });
+
+        if (isFirstFetch) isFirstFetch = false;
+
       } catch (e) {
         console.error('Error fetching page data:', e);
       }
     }, 100);
   })();
 });
+

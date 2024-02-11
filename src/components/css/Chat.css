@@ -22,3 +22,81 @@
     height: 86vh; 
     overflow: auto; /* Scrollbars will appear if content overflows */
 }
+
+
+
+.spinner {
+  border: 4px solid rgba(0,0,0,.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border-left-color: #09f;
+  animation: spin 1s ease infinite;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* This will center the spinner correctly */
+  transform: translate(-50%, -50%) rotate(0deg); /* Combined with initial spin rotation */
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.connected-message {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.connected {
+  position: absolute;
+  bottom: 1.25rem;
+  color: rgb(53, 255, 53);
+}
+
+.error {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 2.5rem;
+  color: rgb(255, 53, 53);
+}
+
+.tooltip-connected {
+  position: fixed; /* Use 'fixed' to position relative to the viewport */
+  bottom: 0; /* Position at the bottom of the screen */
+  left: 47%; /* Start from the middle of the screen */
+  transform: translateX(-50%); /* Center the tooltip horizontally */
+  background-color: rgb(0, 123, 37); /* Red background */
+  color: #fff; /* White text color for better contrast */
+  border: 1px solid transparent; /* Optional, adjust as needed */
+  padding: 10px 20px; /* Adjust padding as needed */
+  z-index: 100; /* Ensure it's above other content */
+  text-align: center; /* Center the text */
+  width: auto; /* Adjust width as needed */
+  max-width: 80%; /* Prevent the tooltip from being too wide */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  font-size: small;
+  border-radius: 5px;
+  outline: none;
+}
+
+.tooltip-disconnected {
+  font-size: small;
+  border-radius: 5px;
+
+  position: fixed; /* Use 'fixed' to position relative to the viewport */
+  bottom: 0; /* Position at the bottom of the screen */
+  left: 50%; /* Start from the middle of the screen */
+  transform: translateX(-50%); /* Center the tooltip horizontally */
+  background-color: rgb(116, 78, 78); /* Red background */
+  color: #fff; /* White text color for better contrast */
+  border: 1px solid transparent; /* Optional, adjust as needed */
+  outline: none;
+  padding: 10px 20px; /* Adjust padding as needed */
+  z-index: 100; /* Ensure it's above other content */
+  text-align: center; /* Center the text */
+  width: auto; /* Adjust width as needed */
+  max-width: 80%; /* Prevent the tooltip from being too wide */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
