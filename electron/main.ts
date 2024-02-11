@@ -4,6 +4,7 @@ import path from 'node:path';
 import Store from 'electron-store';
 import { spawn } from 'node:child_process';
 import { ChildProcessWithoutNullStreams } from 'child_process';
+import log from 'electron-log/main';
 
 // The built directory structure
 process.env.DIST = path.join(__dirname, '../dist');
@@ -11,7 +12,7 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.D
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
-let serverProcess: ChildProcessWithoutNullStreams | null = null; // To keep track of the spawned server process
+let child: ChildProcessWithoutNullStreams;
 
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 const store = new Store();
@@ -25,6 +26,9 @@ function createSplashWindow() {
     alwaysOnTop: true
   });
   splash.loadFile('splash.html');
+  splash.on('closed', () => {
+    splash = null;
+  });
 }
 
 function createWindow() {
@@ -76,23 +80,34 @@ function createWindow() {
   ipcMain.handle('startServer', async () => {
     console.log('server handling...')
     const urls = store.get('urls')
-    serverProcess = spawn('node', ['worker.mjs'], {
+    const workerPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'worker.js') // Path when packaged
+      : path.join('worker.js'); // Path in development
+
+    child = spawn('node', [workerPath], {
+
       env: {
         ...process.env, // Include existing environment variables
         USER_URLS: JSON.stringify(urls)
-      }
+      },
     });
+    log.info('Server has been started');
 
-    serverProcess.stdout.on('data', (data) => {
+    child.stdout.on('data', (data) => {
       console.log(`Child stdout:\n${data}`);
+      log.info(`Child stdout:\n${data}`);
     });
 
-    serverProcess.stderr.on('data', (data) => {
+    child.stderr.on('data', (data) => {
       console.error(`Child stderr:\n${data}`);
+      log.info(`Child stderr:\n${data}`);
+
     });
 
-    serverProcess.on('exit', (code, signal) => {
+    child.on('exit', (code, signal) => {
       console.log(`Child exited with code ${code} and signal ${signal}`);
+      log.info(`Child exited with code ${code} and signal ${signal}`);
+
     });
 
   })
@@ -103,14 +118,8 @@ function createWindow() {
     win?.webContents.send('setup-updated', true);
   });
 
-  ipcMain.handle('restart-app', () => {
-    app.relaunch();
-    app.exit();
-  })
 
   // Workers --------------------------------------------
-
-
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
@@ -123,26 +132,23 @@ function createWindow() {
     win?.show(); // Show the main window
   });
 
+  win?.on('closed', () => {
+    win = null;
+  });
 }
 
+
 app.on('before-quit', () => {
-  if (serverProcess !== null) {
-    serverProcess.kill('SIGINT'); // Sends the SIGINT signal to terminate the child process
-    serverProcess = null; // Reset the reference
-  }
+  // Terminate child processes
+  child.kill(); // Assuming `child` is your spawned process
 });
 
 app.on('window-all-closed', () => {
   win = null;
-  if (process.platform !== 'darwin' || !app.isPackaged) { // On macOS, apps commonly stay active until the user quits explicitly with Cmd + Q
-    if (serverProcess !== null) {
-      serverProcess.kill('SIGINT');
-      serverProcess = null;
-    }
-    app.quit(); // Ensures the app quits in development when all windows are closed
+  if (process.platform !== 'darwin') {
+    app.quit();
   }
 });
 
 initialize();
 app.whenReady().then(createSplashWindow).then(createWindow);
-

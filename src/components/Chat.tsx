@@ -35,66 +35,88 @@ const Chat = () => {
     window.electronAPI.startServer();
   }, []);
 
+  const MAX_RECONNECT_ATTEMPTS = 5;
+  const RECONNECT_DELAY_MS = 2000; // 2 seconds
+
+  // State to keep track of reconnection attempts
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+
   useEffect(() => {
-    console.log('Starting Socket Connection...');
+    
+    let webSocket: WebSocket;
 
-    const webSocket = new WebSocket('ws://localhost:8080');
 
-    webSocket.onopen = () => {
-      console.log("WebSocket is now open.");
+    const connectWebSocket = () => {
+      console.log('Starting Socket Connection...');
+      webSocket = new WebSocket('ws://localhost:8080');
+
+      webSocket.onopen = () => {
+        console.log("WebSocket is now open.");
+        setReconnectAttempts(0); // Reset reconnection attempts on successful connection
+      };
+
+      // webSocket.onmessage = (event) => {
+      //   console.log("Message from server:", event.data);
+      //   const newMessages: MessageModel[] = JSON.parse(event.data);
+      //   console.log(newMessages)
+      //   setMessages((prevChat) => [...prevChat, ...newMessages]);
+      // };
+
+      webSocket.onmessage = (event) => {
+        console.log("Message from server:", event.data);
+        const message = JSON.parse(event.data); // Corrected from `JSON.parse(event)`
+
+        switch (message.type) {
+          case 'chatMessage':
+            // eslint-disable-next-line no-case-declarations
+            const newMessages: MessageModel[] = message.data;
+            setMessages((prevChat) => [
+              ...prevChat,
+              ...newMessages
+            ].slice(-MAX_MESSAGES)); // Keep only the last MAX_MESSAGES messages
+            break;
+          case 'error':
+            console.log("Error loading chat for URL:", message.errorUrl);
+            setError(true);
+            setDisconnectedURLS(prevURLs => [...prevURLs, message.errorUrl]);
+            break;
+          case 'success':
+            console.log('Successfully loaded all scripts:', message.urls);
+            setConnected(true);
+            setConnectedURLS(message.urls);
+
+            break;
+          default:
+            console.error('Unknown message type:', message.type);
+        }
+      };
+      webSocket.onerror = (event) => {
+        console.error("WebSocket error observed:", event);
+        setSocketError(true);
+      };
+
+      webSocket.onclose = () => {
+        console.log("WebSocket is closed now.");
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          setTimeout(() => {
+            console.log(`Attempting to reconnect... (${reconnectAttempts + 1})`);
+            setReconnectAttempts(reconnectAttempts + 1);
+            connectWebSocket(); // Attempt to reconnect
+          }, RECONNECT_DELAY_MS);
+        } else {
+          console.error("Maximum reconnect attempts reached.");
+        }
+      };
     };
 
-    // webSocket.onmessage = (event) => {
-    //   console.log("Message from server:", event.data);
-    //   const newMessages: MessageModel[] = JSON.parse(event.data);
-    //   console.log(newMessages)
-    //   setMessages((prevChat) => [...prevChat, ...newMessages]);
-    // };
-
-    webSocket.onmessage = (event) => {
-      console.log("Message from server:", event.data);
-      const message = JSON.parse(event.data); // Corrected from `JSON.parse(event)`
-
-      switch (message.type) {
-        case 'chatMessage':
-          // eslint-disable-next-line no-case-declarations
-          const newMessages: MessageModel[] = message.data;
-          setMessages((prevChat) => [
-            ...prevChat,
-            ...newMessages
-          ].slice(-MAX_MESSAGES)); // Keep only the last MAX_MESSAGES messages
-          break;
-        case 'error':
-          console.log("Error loading chat for URL:", message.errorUrl);
-          setError(true);
-          setDisconnectedURLS(prevURLs => [...prevURLs, message.errorUrl]);
-          break;
-        case 'success':
-          console.log('Successfully loaded all scripts:', message.urls);
-          setConnected(true);
-          setConnectedURLS(message.urls);
-
-          break;
-        default:
-          console.error('Unknown message type:', message.type);
-      }
-    };
-
-
-    webSocket.onerror = (event) => {
-      console.error("WebSocket error observed:", event);
-      setSocketError(true);
-      webSocket.close();
-    };
-
-    webSocket.onclose = () => {
-      console.log("WebSocket is closed now.");
-    };
+    connectWebSocket(); // Initial connection attempt
 
     return () => {
       webSocket.close();
     };
-  }, []);
+  }, [reconnectAttempts]); // Depend on `reconnectAttempts` to trigger reconnection attempts
+
+
 
   const handleConnectedHover = (show: boolean | ((prevState: boolean) => boolean)) => {
     setShowConnectedTooltip(show);

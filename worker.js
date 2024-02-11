@@ -1,5 +1,5 @@
-import puppeteer from 'puppeteer';
-import { WebSocketServer } from 'ws';
+const puppeteer = require('puppeteer');
+const { WebSocketServer } = require('ws');
 
 let activeBrowser; // Track the active Puppeteer browser
 let fetchInterval; // Track the interval ID for fetching chat data
@@ -93,6 +93,7 @@ async function getTwitchPageData(page) {
 
 
 const wss = new WebSocketServer({ port: 8080 });
+//MEssage Socket has been created here
 
 wss.on('connection', function connection(ws) {
   ws.on('message', function message(data) {
