@@ -13,7 +13,6 @@ const App = () => {
     const handleSetupUpdate = (updatedSetup: boolean) => {
       setSetup(updatedSetup);
     };
-
     // Listen for 'setup-updated' messages from the main process
     window.electronAPI.onSetupUpdated(handleSetupUpdate);
 

@@ -8,7 +8,7 @@ interface SetupScreenProps {
     setSetup: SetSetupFunction;
 }
 
-const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) =>{
+const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
     const [urls, setUrls] = useState(['']);
 
     // Set up urls 
@@ -44,6 +44,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) =>{
     const goToMain = () => {
         window.electronAPI.setSetup(false);
         setSetup(false);
+        // window.electronAPI.restartApp();
     }
 
     return (
@@ -61,7 +62,6 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) =>{
             <button onClick={addNewUrlField} className='setup-button'>Add Another URL</button>
             <button onClick={goToMain} className='setup-button'>Go to Main Screen</button>
             <button onClick={handleSubmit} className='setup-button save'>Save</button>
-
         </div>
     );
 };

@@ -3,6 +3,7 @@ import { initialize, enable } from '@electron/remote/main';
 import path from 'node:path';
 import Store from 'electron-store';
 import { spawn } from 'node:child_process';
+import { ChildProcessWithoutNullStreams } from 'child_process';
 
 // The built directory structure
 process.env.DIST = path.join(__dirname, '../dist');
@@ -10,6 +11,7 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.D
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
+let serverProcess: ChildProcessWithoutNullStreams | null = null; // To keep track of the spawned server process
 
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 const store = new Store();
@@ -74,22 +76,22 @@ function createWindow() {
   ipcMain.handle('startServer', async () => {
     console.log('server handling...')
     const urls = store.get('urls')
-    const child = spawn('node', ['worker.mjs'], {
+    serverProcess = spawn('node', ['worker.mjs'], {
       env: {
         ...process.env, // Include existing environment variables
         USER_URLS: JSON.stringify(urls)
       }
     });
 
-    child.stdout.on('data', (data) => {
+    serverProcess.stdout.on('data', (data) => {
       console.log(`Child stdout:\n${data}`);
     });
 
-    child.stderr.on('data', (data) => {
+    serverProcess.stderr.on('data', (data) => {
       console.error(`Child stderr:\n${data}`);
     });
 
-    child.on('exit', (code, signal) => {
+    serverProcess.on('exit', (code, signal) => {
       console.log(`Child exited with code ${code} and signal ${signal}`);
     });
 
@@ -101,6 +103,11 @@ function createWindow() {
     win?.webContents.send('setup-updated', true);
   });
 
+  ipcMain.handle('restart-app', () => {
+    app.relaunch();
+    app.exit();
+  })
+
   // Workers --------------------------------------------
 
 
@@ -110,7 +117,7 @@ function createWindow() {
   } else {
     win.loadFile(path.join(process.env.DIST, 'index.html'));
   }
-  win.setMenu(null);
+  // win.setMenu(null);
   win.once('ready-to-show', () => {
     splash?.close(); // Close the splash screen
     win?.show(); // Show the main window
@@ -118,9 +125,22 @@ function createWindow() {
 
 }
 
+app.on('before-quit', () => {
+  if (serverProcess !== null) {
+    serverProcess.kill('SIGINT'); // Sends the SIGINT signal to terminate the child process
+    serverProcess = null; // Reset the reference
+  }
+});
 
 app.on('window-all-closed', () => {
   win = null;
+  if (process.platform !== 'darwin' || !app.isPackaged) { // On macOS, apps commonly stay active until the user quits explicitly with Cmd + Q
+    if (serverProcess !== null) {
+      serverProcess.kill('SIGINT');
+      serverProcess = null;
+    }
+    app.quit(); // Ensures the app quits in development when all windows are closed
+  }
 });
 
 initialize();

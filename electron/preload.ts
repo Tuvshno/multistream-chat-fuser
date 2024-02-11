@@ -101,6 +101,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeSetupUpdatedListener: (func: (updatedSetup: boolean) => void) => {
     ipcRenderer.removeListener('setup-updated', func);
   },
+  restartApp: () => ipcRenderer.invoke('restart-app')
 })
 
 // ----------------------------------------------------------------------
