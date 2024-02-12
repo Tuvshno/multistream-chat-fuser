@@ -81,8 +81,8 @@ function createWindow() {
     console.log('server handling...')
     const urls = store.get('urls')
     const workerPath = app.isPackaged
-      ? path.join(process.resourcesPath, 'worker.js') // Path when packaged
-      : path.join('worker.js'); // Path in development
+      ? path.join(process.resourcesPath, 'worker.mjs') // Path when packaged
+      : path.join('worker.mjs'); // Path in development
 
     child = spawn('node', [workerPath], {
 

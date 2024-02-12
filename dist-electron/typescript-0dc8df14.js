@@ -1,0 +1,1 @@
+"use strict";const t=require("./main-5372de9f.js");var e=t.requireTypescript();const r=t.getDefaultExportFromCjs(e),p=Object.freeze(Object.defineProperty({__proto__:null,default:r},Symbol.toStringTag,{value:"Module"}));exports.typescript=p;
