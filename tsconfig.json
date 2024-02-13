@@ -28,7 +28,7 @@
     "./global.d.ts",
     "dist/worker.mjs",
     "dist/worker.mjs"
-  ],
+, "worker.js"  ],
   "references": [
     {
       "path": "./tsconfig.node.json"

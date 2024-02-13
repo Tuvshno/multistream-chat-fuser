@@ -1,5 +1,7 @@
-import { launch } from 'puppeteer';
-import { WebSocketServer } from 'ws';
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const puppeteer = require('puppeteer');
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const websocket = require('ws');
 
 let activeBrowser; // Track the active Puppeteer browser
 let fetchInterval; // Track the interval ID for fetching chat data
@@ -92,7 +94,7 @@ async function getTwitchPageData(page) {
 }
 
 
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new websocket.WebSocketServer({ port: 8080 });
 //MEssage Socket has been created here
 
 wss.on('connection', function connection(ws) {
@@ -111,13 +113,19 @@ wss.on('connection', function connection(ws) {
       activeBrowser = null; // Reset the activeBrowser variable
     }
 
-    activeBrowser = await launch({ headless: true });
+    activeBrowser = await puppeteer.launch({ headless: true });
     const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
 
     // eslint-disable-next-line no-undef
-    const USER_URLS = JSON.parse(process.env.USER_URLS);
-    console.log(USER_URLS);
+    // const USER_URLS = JSON.parse(process.env.USER_URLS);
+    // console.log(USER_URLS);
 
+    // eslint-disable-next-line no-undef
+    const urlsArg = process.argv[2];
+    const USER_URLS = JSON.parse(urlsArg); // Convert the JSON string back into an array/object
+    
+    console.log('Received URLs:', USER_URLS);
+    
     const selectors = [
       '#items.style-scope.yt-live-chat-item-list-renderer',
       '#items.style-scope.yt-live-chat-item-list-renderer',

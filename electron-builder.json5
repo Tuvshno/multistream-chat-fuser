@@ -5,6 +5,9 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "YourAppID",
   "asar": true,
+  "asarUnpack": [
+    "node_modules/**"
+  ],
   "directories": {
     "output": "release/${version}"
   },
@@ -14,8 +17,8 @@
   ],
   "extraResources": [
     {
-      "from": "D:/Dev/chat-fuser/fuser/multistream-chat-fuser/worker.mjs",
-      "to": "worker.mjs",
+      "from": "D:/Dev/chat-fuser/fuser/multistream-chat-fuser/worker.js",
+      "to": "worker.js",
       "filter": [
         "**/*"
       ]

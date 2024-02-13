@@ -3,8 +3,8 @@ import { initialize, enable } from '@electron/remote/main';
 import path from 'node:path';
 import Store from 'electron-store';
 import { spawn } from 'node:child_process';
-import { ChildProcessWithoutNullStreams } from 'child_process';
 import log from 'electron-log/main';
+// import { ChildProcess, fork } from 'child_process';
 
 // The built directory structure
 process.env.DIST = path.join(__dirname, '../dist');
@@ -12,7 +12,7 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.D
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
-let child: ChildProcessWithoutNullStreams;
+let child: { kill: () => void; };
 
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 const store = new Store();
@@ -80,21 +80,57 @@ function createWindow() {
   ipcMain.handle('startServer', async () => {
     console.log('server handling...')
     const urls = store.get('urls')
+    const urlsJson = JSON.stringify(urls);
+
+    // const workerPath = app.isPackaged
+    //   ? path.join(process.resourcesPath, 'worker.mjs') // Path when packaged
+    //   : path.join('worker.mjs'); // Path in development
+
     const workerPath = app.isPackaged
-      ? path.join(process.resourcesPath, 'worker.mjs') // Path when packaged
-      : path.join('worker.mjs'); // Path in development
+      ? path.join(process.resourcesPath, 'worker.js') // Path when packaged
+      : path.join('./worker.js');
 
-    child = spawn('node', [workerPath], {
+    // child = spawn('node', [workerPath], {
 
-      env: {
-        ...process.env, // Include existing environment variables
-        USER_URLS: JSON.stringify(urls)
-      },
-    });
+    //   env: {
+    //     ...process.env, // Include existing environment variables
+    //     USER_URLS: JSON.stringify(urls)
+    //   },
+    // });
+
+    // child = spawn(workerPath, [JSON.stringify(urls)], {
+    //   stdio: 'pipe' // Changed to 'pipe' to handle stdio streams manually
+    // });
+    console.log(workerPath)
+    let child;
+
+    if (app.isPackaged) {
+      // In production, set NODE_PATH to 'app.asar.unpacked/node_modules'
+      const nodeModulesPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules');
+      child = spawn('node', [workerPath, urlsJson], {
+        stdio: 'pipe', // Use 'pipe' to handle stdio streams manually
+        windowsHide: false, // Hide the terminal window on Windows
+        env: {
+          ...process.env, // Inherit the parent's environment variables
+          NODE_PATH: nodeModulesPath, // Override NODE_PATH
+          ELECTRON_RUN_AS_NODE: '1'
+
+        }
+      });
+
+    }
+    else {
+      child = spawn('node', [workerPath, urlsJson], {
+        stdio: 'pipe', // Use 'pipe' to handle stdio streams manually
+        windowsHide: false // Hide the terminal window on Windows
+      });
+    }
+
+
     log.info('Server has been started');
 
     child.stdout.on('data', (data) => {
-      console.log(`Child stdout:\n${data}`);
+      console.log(`stdout: ${data}`);
       log.info(`Child stdout:\n${data}`);
     });
 
