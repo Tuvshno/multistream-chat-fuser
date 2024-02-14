@@ -40,7 +40,6 @@ const Chat = () => {
 
   // State to keep track of reconnection attempts
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
-
   useEffect(() => {
     
     let webSocket: WebSocket;

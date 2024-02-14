@@ -113,8 +113,8 @@ wss.on('connection', function connection(ws) {
       activeBrowser = null; // Reset the activeBrowser variable
     }
 
-    activeBrowser = await puppeteer.launch({ headless: true });
-    const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
+    activeBrowser = await puppeteer.launch({ headless: false });
+    // const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
 
     // eslint-disable-next-line no-undef
     // const USER_URLS = JSON.parse(process.env.USER_URLS);
@@ -123,54 +123,73 @@ wss.on('connection', function connection(ws) {
     // eslint-disable-next-line no-undef
     const urlsArg = process.argv[2];
     const USER_URLS = JSON.parse(urlsArg); // Convert the JSON string back into an array/object
-    
+
+    const platform = [];
+
+    USER_URLS.forEach(url => {
+      if (url.includes("youtube")) {
+        platform.push(0); // 0 for YouTube
+      } else if (url.includes("twitch")) {
+        platform.push(1); // 1 for Twitch
+      }
+    });
     console.log('Received URLs:', USER_URLS);
-    
+    console.log('Platforms:', platform);
+
     const selectors = [
-      '#items.style-scope.yt-live-chat-item-list-renderer',
-      '#items.style-scope.yt-live-chat-item-list-renderer',
-      '.chat-scrollable-area__message-container'
+      '#items.style-scope.yt-live-chat-item-list-renderer', //YT Selector
+      '.chat-scrollable-area__message-container' //Twitch Selector
     ];
 
-    // Set user agents and navigate to URLs
-    for (let i = 0; i < pages.length; i++) {
-      await pages[i].setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
-      await pages[i].goto(USER_URLS[i]).catch(e => console.error(`Error navigating to ${USER_URLS[i]}:`, e));
+
+    let pageData = [];
+
+
+    for (let i = 0; i < USER_URLS.length; i++) {
+      const page = await activeBrowser.newPage();
+      await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
+      await page.goto(USER_URLS[i]).catch(e => console.error(`Error navigating to ${USER_URLS[i]}:`, e));
+
+      // Push an object containing the page, its platform type, and the selector to the pageData array
+      pageData.push({
+        page: page,
+        platform: platform[i],
+        selector: selectors[platform[i]]
+      });
     }
 
     // Attempt to wait for selectors and handle failures
-    for (let i = 0; i < pages.length; i++) {
+    for (let i = 0; i < pageData.length; i++) {
       try {
-        await pages[i].waitForSelector(selectors[i]);
+        await pageData[i].page.waitForSelector(pageData[i].selector);
       } catch (e) {
-        console.error(`Failed to find selector ${selectors[i]} on page ${i + 1}:`, e);
+        console.error(`Failed to find selector ${pageData[i].selector} on page ${i + 1}:`, e);
         ws.send(JSON.stringify({ type: 'error', errorUrl: USER_URLS[i] }));
 
-        // Remove the failed page from the array
-        pages.splice(i, 1);
-        selectors.splice(i, 1);
-        USER_URLS.splice(i, 1);
+        // Remove the failed pageData object from the array
+        pageData.splice(i, 1);
         i--; // Adjust index since we removed an item
       }
     }
 
-    console.log('Listening to chats...');
     ws.send(JSON.stringify({
       type: 'success',
       urls: USER_URLS // This will contain only the URLs of the pages that passed the waitForSelector check
     }));
 
+    // Now, when fetching chat data, map over the pageData array
     fetchInterval = setInterval(async () => {
       try {
-        const chatDataPromises = pages.map((page, index) => {
-          if (selectors[index].includes('yt-live-chat-item-list-renderer')) {
-            return getYouTubePageData(page);
+        const chatDataPromises = pageData.map(data => {
+          if (data.selector.includes('yt-live-chat-item-list-renderer')) {
+            return getYouTubePageData(data.page);
           } else {
-            return getTwitchPageData(page);
+            return getTwitchPageData(data.page);
           }
         });
 
         const chatDataArrays = await Promise.all(chatDataPromises);
+
 
         chatDataArrays.forEach((chatData, index) => {
           chatData = chatData.reverse();
