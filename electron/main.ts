@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { initialize, enable } from '@electron/remote/main';
 import path from 'node:path';
 import Store from 'electron-store';
@@ -214,6 +214,17 @@ app.on('ready', () => {
 
 autoUpdater.on('update-available', () => {
   // Notify your users that an update is available.
+  dialog.showMessageBox({
+    type: 'info', // Type of the message box
+    title: 'Update Available', // Title of the message box
+    message: 'A new version of the application is available. It will be downloaded in the background.', // Message to display
+    buttons: ['OK'] // Array of text for buttons. In this case, only an "OK" button.
+  }).then(result => {
+    console.log('User response:', result.response);
+    // You can perform additional actions based on user's response if needed
+  }).catch(err => {
+    console.error('Failed to show update dialog:', err);
+  });
 });
 
 autoUpdater.on('update-downloaded', () => {
