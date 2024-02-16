@@ -93,7 +93,6 @@ async function getTwitchPageData(page) {
   return chatData;
 }
 
-
 const wss = new websocket.WebSocketServer({ port: 8080 });
 //MEssage Socket has been created here
 
@@ -113,7 +112,7 @@ wss.on('connection', function connection(ws) {
       activeBrowser = null; // Reset the activeBrowser variable
     }
 
-    activeBrowser = await puppeteer.launch({ headless: "new" });
+    activeBrowser = await puppeteer.launch({ headless: false });
     // const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
 
     // eslint-disable-next-line no-undef
@@ -146,9 +145,14 @@ wss.on('connection', function connection(ws) {
 
 
     for (let i = 0; i < USER_URLS.length; i++) {
+      if (!activeBrowser) {
+        activeBrowser = await puppeteer.launch({ headless: "new" }); // Ensure headless is set to true or false based on your requirement
+      }
       const page = await activeBrowser.newPage();
+
       await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
       await page.goto(USER_URLS[i]).catch(e => console.error(`Error navigating to ${USER_URLS[i]}:`, e));
+
 
       // Push an object containing the page, its platform type, and the selector to the pageData array
       pageData.push({
@@ -207,3 +211,22 @@ wss.on('connection', function connection(ws) {
   })();
 });
 
+// eslint-disable-next-line no-undef
+process.on('message', (message) => {
+  if (message === 'shutdown') {
+    console.log('Shutting down WebSocket server...');
+
+    // Close all WebSocket connections
+    wss.clients.forEach(function each(client) {
+      client.terminate();
+    });
+
+    // Close the WebSocket server
+    wss.close(() => {
+      console.log('WebSocket server closed.');
+      // Exit the process if needed
+      // eslint-disable-next-line no-undef
+      process.exit(0);
+    });
+  }
+});
