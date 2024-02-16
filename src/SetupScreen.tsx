@@ -1,7 +1,6 @@
-import { useState, useEffect, SetStateAction } from 'react';
+import { useState, useEffect } from 'react';
 import ChatMessage from './components/ChatMessage';
 import './setup.css'
-import { FaHeartCircleCheck } from 'react-icons/fa6';
 
 type SetSetupFunction = (value: boolean) => void; // Example function type that takes a boolean and returns void
 
@@ -100,6 +99,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
             <button onClick={addNewUrlField} className='setup-button'>Add Another URL</button>
             <button onClick={goToMain} className='setup-button'>Go to Main Screen</button>
             <button onClick={handleSubmit} className='setup-button save'>Save</button>
+
+            <div className='version'>Version 1.2.6</div>
         </div >
     );
 };

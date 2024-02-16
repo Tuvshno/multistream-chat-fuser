@@ -79,3 +79,11 @@ body {
 .negative:hover {
   color: rgb(255, 0, 0);
 }
+
+.version {
+  position: absolute;
+  bottom: 0;
+  left: 5px;
+  font-weight: bold;
+  opacity: 20%;
+}
