@@ -90,7 +90,9 @@ function useLoading() {
 contextBridge.exposeInMainWorld('electronAPI', {
   setup: () => ipcRenderer.invoke('setup'),
   saveURLS: (urls: string[]) => ipcRenderer.invoke('saveURLS', urls),
+  saveFontSize: (fontSize: number) => ipcRenderer.invoke('saveFontSize', fontSize),
   getUrls: () => ipcRenderer.invoke('getURLs'),
+  getFontSize: () => ipcRenderer.invoke('getFontSize'),
   setSetup: (boolSetup: boolean) => ipcRenderer.invoke('setSetup', boolSetup),
   setWindowSize: (width: number, height: number) => ipcRenderer.invoke('setWindowSize', width, height),
   startServer: () => ipcRenderer.invoke('startServer'),

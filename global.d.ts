@@ -7,6 +7,8 @@ declare global {
       setup: () => Promise<boolean>;
       setSetup: (boolSetup: boolean) => Promise<void>;
       saveURLS: (urls: string[]) => Promise<void>;
+      saveFontSize: (fontSize: number) => Promise<void>;
+      getFontSize: () => Promise<number>;
       getUrls: () => Promise<string[]>;
       setWindowSize: (width: number, height: number) => Promise<void>;
       startServer: () => Promise<void>;

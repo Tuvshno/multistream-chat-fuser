@@ -4,12 +4,14 @@ import TwitchBadge from '../assets/Twitch_Badge_18.png'
 import './css/ChatMessage.css'
 
 type MessageProps = {
-    messageInfo: MessageModel
+    messageInfo: MessageModel;
+    style?: React.CSSProperties;
 } & React.ComponentPropsWithRef<'div'>
 
 const ChatMessage = ({
     messageInfo: { platform, authorName, message, imgSrcs, authorColor },
     className,
+    style, 
 }: MessageProps) => {
     const Badges = imgSrcs.map((bg, i) => (
         <img
@@ -50,6 +52,7 @@ const ChatMessage = ({
     return (
         <div
             className={`message-container ${className}`}
+            style={style} 
         >
             <div className="chat-message-info">
                 {platform === 'YouTube' ?

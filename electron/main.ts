@@ -69,6 +69,16 @@ function createWindow() {
     store.set('urls', urls);
   });
 
+  ipcMain.handle('saveFontSize', async (_event, fontSize) => {
+    console.log(fontSize);
+    store.set('fontSize', fontSize);
+  })
+
+  ipcMain.handle('getFontSize', async () => {
+    console.log(store.get('fontSize', 14))
+    return store.get('fontSize', 14); // Assuming 'urls' is the key in electron-store
+  });
+
   ipcMain.handle('getURLs', async () => {
     return store.get('urls', []); // Assuming 'urls' is the key in electron-store
   });

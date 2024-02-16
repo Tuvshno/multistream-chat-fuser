@@ -14,11 +14,17 @@ body {
   background-color: #242429;
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  align-content: center;
+  align-items: center;
 }
 
 .setup-header {
   color: #FFFFFF; /* Pure white for the header for emphasis */
   margin-bottom: 2rem; /* More space above the first input field */
+}
+
+.setup-url-input {
+  width: 90%;
 }
 
 .setup-url-input, .setup-button {
@@ -41,6 +47,7 @@ body {
 .setup-button {
   cursor: pointer; /* Indicate that the buttons are clickable */
   transition: background-color 0.2s ease-in-out;
+  width: 50%;
 }
 
 .setup-button:hover {
@@ -58,4 +65,17 @@ body {
 
 .save:hover {
   background-color: #674dff;
+}
+
+.font-size-button {
+  background-color: transparent;
+  color: white;
+}
+
+.positive:hover {
+  color: rgb(0, 255, 0);
+}
+
+.negative:hover {
+  color: rgb(255, 0, 0);
 }

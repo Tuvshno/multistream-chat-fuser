@@ -10,6 +10,8 @@ import { MdError } from "react-icons/md";
 
 const Chat = () => {
   const [messages, setMessages] = useState<MessageModel[]>([]);
+  const [fontSize, setFontSize] = useState<number>(14);
+
   const [connected, setConnected] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -33,6 +35,9 @@ const Chat = () => {
     window.electronAPI.setWindowSize(500, 900);
     console.log('starting server...');
     window.electronAPI.startServer();
+    window.electronAPI.getFontSize().then((fs) => {
+      setFontSize(fs);
+  });
   }, []);
 
   const MAX_RECONNECT_ATTEMPTS = 5;
@@ -40,8 +45,9 @@ const Chat = () => {
 
   // State to keep track of reconnection attempts
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
+
   useEffect(() => {
-    
+
     let webSocket: WebSocket;
 
 
@@ -127,7 +133,7 @@ const Chat = () => {
 
   return (
     <div className="Chat">
-      <ChatMessagesBox ref={chatMessagesBoxRef} messages={messages} />
+      <ChatMessagesBox ref={chatMessagesBoxRef} messages={messages} fontSize={fontSize} />
       {!isLiveModeEnabled && (
         <ChatPausedAlert
           onClick={scrollNewMessages}
@@ -178,10 +184,10 @@ const Chat = () => {
 
 const ChatMessagesBox = React.forwardRef<
   HTMLDivElement,
-  { messages: MessageModel[] }
->(({ messages }, ref) => {
+  { messages: MessageModel[]; fontSize: number } // Include fontSize in the props
+>(({ messages, fontSize }, ref) => {
   const MessageList = messages.map((messageInfo) => (
-    <ChatMessage key={messageInfo.id} className="chat-message" messageInfo={messageInfo} />
+    <ChatMessage key={messageInfo.id} className="chat-message" messageInfo={messageInfo} style={{ fontSize: `${fontSize}px` }} />
   ))
 
   return (
