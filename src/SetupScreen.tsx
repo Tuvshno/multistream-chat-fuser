@@ -1,7 +1,6 @@
-import { useState, useEffect, SetStateAction } from 'react';
+import { useState, useEffect } from 'react';
 import ChatMessage from './components/ChatMessage';
 import './setup.css'
-import { FaHeartCircleCheck } from 'react-icons/fa6';
 
 type SetSetupFunction = (value: boolean) => void; // Example function type that takes a boolean and returns void
 

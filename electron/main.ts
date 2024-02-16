@@ -4,6 +4,9 @@ import path from 'node:path';
 import Store from 'electron-store';
 import { spawn } from 'node:child_process';
 import log from 'electron-log/main';
+import { ChildProcess } from 'child_process';
+import { autoUpdater } from "electron-updater";
+
 // import { ChildProcess, fork } from 'child_process';
 
 // The built directory structure
@@ -12,7 +15,7 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.D
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
-let child: { kill: () => void; };
+let child: ChildProcess | null;
 
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 const store = new Store();
@@ -162,6 +165,15 @@ function createWindow() {
     console.log('setup updated');
     store.set('setup', true);
     win?.webContents.send('setup-updated', true);
+
+    child?.send('shutdown');
+    setTimeout(() => {
+      child?.kill(); // Terminate the child process
+
+    }, 3000)
+    console.log('Child process terminated');
+    log.info('Child process terminated');
+
   });
 
 
@@ -186,7 +198,7 @@ function createWindow() {
 
 app.on('before-quit', () => {
   // Terminate child processes
-  child.kill(); // Assuming `child` is your spawned process
+  child?.kill(); // Assuming `child` is your spawned process
 });
 
 app.on('window-all-closed', () => {
@@ -194,6 +206,19 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('ready', () => {
+  autoUpdater.checkForUpdatesAndNotify();
+});
+
+autoUpdater.on('update-available', () => {
+  // Notify your users that an update is available.
+});
+
+autoUpdater.on('update-downloaded', () => {
+  // Notify your users that the update is ready to be installed.
+  autoUpdater.quitAndInstall();
 });
 
 initialize();
