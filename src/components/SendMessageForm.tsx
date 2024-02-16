@@ -9,7 +9,7 @@ type SendMessageFormProps = {
 
 const MAX_MESSAGE_LENGTH = 300
 
-const SendMessageForm = ({ onSend }: SendMessageFormProps) => {
+const SendMessageForm = ({ onSend  }: SendMessageFormProps) => {
     const [message, setMessage] = useState('')
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -25,7 +25,8 @@ const SendMessageForm = ({ onSend }: SendMessageFormProps) => {
     }
 
 const openSettingsWindow = () => {
-    console.log('sending message to open settings')
+    console.log('sending message to open settings');
+    // onCloseWebSocket();
     window.electronAPI.openSettingsWindow();
 }
 
