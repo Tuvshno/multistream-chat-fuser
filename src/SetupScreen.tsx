@@ -100,7 +100,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
             <button onClick={goToMain} className='setup-button'>Go to Main Screen</button>
             <button onClick={handleSubmit} className='setup-button save'>Save</button>
 
-            <div className='version'>Version 1.2.6</div>
+            <div className='version'>Version 1.2.8</div>
         </div >
     );
 };

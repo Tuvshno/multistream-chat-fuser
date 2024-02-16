@@ -8,13 +8,6 @@
   "asarUnpack": [
     "node_modules/**"
   ],
-  "build": {
-    "publish": {
-        "provider": "github",
-        "repo": "multistream-chat-fuser",
-        "owner": "tuvshno"
-    }
-  },
   "directories": {
     "output": "release/${version}"
   },
@@ -53,5 +46,10 @@
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": true
+  },
+  "publish": {
+    "provider": "github",
+    "repo": "multistream-chat-fuser",
+    "owner": "tuvshno"
   }
 }

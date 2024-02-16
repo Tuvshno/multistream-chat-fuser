@@ -112,7 +112,7 @@ wss.on('connection', function connection(ws) {
       activeBrowser = null; // Reset the activeBrowser variable
     }
 
-    activeBrowser = await puppeteer.launch({ headless: false });
+    activeBrowser = await puppeteer.launch({ headless: "new" });
     // const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
 
     // eslint-disable-next-line no-undef
