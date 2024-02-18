@@ -15,6 +15,8 @@ declare global {
       openSettingsWindow: () => Promise<void>;
       onSetupUpdated: (func: (updatedSetup: boolean) => void) => void;
       removeSetupUpdatedListener: (func: (updatedSetup: boolean) => void) => void;
+      loginWithTwitch: () => Promise<void>;
+      
       // ... any other methods you have
     };
   }

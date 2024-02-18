@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import ChatMessage from './components/ChatMessage';
 import './setup.css'
+import TwitchBadge from './assets/Twitch Badge.png'
+import YouTubeBadge from './assets/YT_Badge_18.png'
 
 type SetSetupFunction = (value: boolean) => void; // Example function type that takes a boolean and returns void
 
@@ -77,9 +79,23 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
         }
     };
 
+    const loginWithTwitch = () => {
+        window.electronAPI.loginWithTwitch();
+    }
+
     return (
         <div className='setup-container' >
             <h2 className='setup-header'>Setup</h2>
+            <div className='setup-login-auth'>
+                <div className='login-card twitch' onClick={loginWithTwitch}>
+                    {/* <img src={TwitchBadge} alt="Twitch" className='login-badge' /> */}
+                    <span>Login with Twitch</span>
+                </div>
+                <div className='login-card youtube' onClick={() => console.log('YouTube login placeholder')}>
+                    {/* <img src={YouTubeBadge} alt="YouTube" className='login-badge' /> */}
+                    <span>Login with YouTube</span>
+                </div>
+            </div>
             {urls.map((url, index) => (
                 <input
                     key={index}

@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import log from 'electron-log/main';
 import { ChildProcess } from 'child_process';
 import { autoUpdater } from "electron-updater";
+import fs from 'fs';
 
 // import { ChildProcess, fork } from 'child_process';
 
@@ -95,32 +96,21 @@ function createWindow() {
     const urls = store.get('urls')
     const urlsJson = JSON.stringify(urls);
 
-    // const workerPath = app.isPackaged
-    //   ? path.join(process.resourcesPath, 'worker.mjs') // Path when packaged
-    //   : path.join('worker.mjs'); // Path in development
+    const cookiesPath = path.join(app.getPath('userData'), 'twitch-cookies.json'); // Ensure this path is correct and accessible
+    const cookies = JSON.parse(fs.readFileSync(cookiesPath, 'utf-8'));
+    const cookiesJson = JSON.stringify(cookies);
 
     const workerPath = app.isPackaged
       ? path.join(process.resourcesPath, 'worker.js') // Path when packaged
       : path.join('./worker.js');
 
-    // child = spawn('node', [workerPath], {
-
-    //   env: {
-    //     ...process.env, // Include existing environment variables
-    //     USER_URLS: JSON.stringify(urls)
-    //   },
-    // });
-
-    // child = spawn(workerPath, [JSON.stringify(urls)], {
-    //   stdio: 'pipe' // Changed to 'pipe' to handle stdio streams manually
-    // });
     console.log(workerPath)
     let child;
 
     if (app.isPackaged) {
       // In production, set NODE_PATH to 'app.asar.unpacked/node_modules'
       const nodeModulesPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules');
-      child = spawn('node', [workerPath, urlsJson], {
+      child = spawn('node', [workerPath, urlsJson, cookiesJson], {
         stdio: 'pipe', // Use 'pipe' to handle stdio streams manually
         windowsHide: false, // Hide the terminal window on Windows
         env: {
@@ -133,7 +123,7 @@ function createWindow() {
 
     }
     else {
-      child = spawn('node', [workerPath, urlsJson], {
+      child = spawn('node', [workerPath, urlsJson, cookiesJson], {
         stdio: 'pipe', // Use 'pipe' to handle stdio streams manually
         windowsHide: false // Hide the terminal window on Windows
       });
@@ -173,8 +163,50 @@ function createWindow() {
     }, 3000)
     console.log('Child process terminated');
     log.info('Child process terminated');
-
   });
+
+  // IPC event handler for 'loginWithTwitch'
+  ipcMain.handle('loginWithTwitch', async () => {
+    console.log('Attempting to log in with Twitch');
+
+    // Open the Twitch authentication window
+    createTwitchAuthWindow();
+
+    // This handler doesn't need to return anything for now,
+    // but you could return a success message or result in the future.
+  });
+
+  function createTwitchAuthWindow() {
+    const authWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      }
+    });
+
+    authWindow.loadURL('https://www.twitch.tv/login');
+
+    // Monitor navigation to check if we navigate away from the login page
+    authWindow.webContents.on('did-navigate', async (event, url) => {
+      // Check if the new URL is not the Twitch login page
+      if (!url.includes('https://www.twitch.tv/login')) {
+        // Capture cookies as this indicates we've navigated away from the login page
+        const cookies = await authWindow.webContents.session.cookies.get({ domain: '.twitch.tv' });
+        console.log('Twitch Login Cookies:', cookies);
+        const filePath = path.join(app.getPath('userData'), 'twitch-cookies.json');
+        fs.writeFileSync(filePath, JSON.stringify(cookies, null, 2));
+
+        // Use the cookies for subsequent requests or store them securely
+
+        // Close the authentication window
+        authWindow.close();
+      }
+    });
+
+    return authWindow;
+  }
 
 
   // Workers --------------------------------------------

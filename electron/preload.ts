@@ -103,6 +103,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeSetupUpdatedListener: (func: (updatedSetup: boolean) => void) => {
     ipcRenderer.removeListener('setup-updated', func);
   },
+  loginWithTwitch: () => ipcRenderer.invoke('loginWithTwitch'),
+
 })
 
 // ----------------------------------------------------------------------

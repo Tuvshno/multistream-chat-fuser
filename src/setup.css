@@ -87,3 +87,51 @@ body {
   font-weight: bold;
   opacity: 20%;
 }
+
+.setup-login-auth {
+  display: flex;
+  width: 80%;
+  flex-direction: column;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  justify-content: center;
+
+}
+
+.login-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  margin-top: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.login-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.login-card.twitch {
+  background-color: #6441a5; /* Twitch color */
+  color: #ffffff;
+}
+
+.login-card.youtube {
+  background-color: #FF0000; /* YouTube color */
+  color: #ffffff;
+}
+
+.login-badge {
+  width: 24px;
+  margin-right: 10px;
+}
+
+/* Additional styling for text and images inside the cards */
+.login-card span {
+  font-size: 16px;
+  font-weight: 600;
+}

@@ -2,6 +2,10 @@
 const puppeteer = require('puppeteer');
 // eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
 const websocket = require('ws');
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const path = require('path');
 
 let activeBrowser; // Track the active Puppeteer browser
 let fetchInterval; // Track the interval ID for fetching chat data
@@ -112,7 +116,7 @@ wss.on('connection', function connection(ws) {
       activeBrowser = null; // Reset the activeBrowser variable
     }
 
-    activeBrowser = await puppeteer.launch({ headless: "new" });
+    activeBrowser = await puppeteer.launch({ headless: false });
     // const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
 
     // eslint-disable-next-line no-undef
@@ -149,6 +153,14 @@ wss.on('connection', function connection(ws) {
         activeBrowser = await puppeteer.launch({ headless: "new" }); // Ensure headless is set to true or false based on your requirement
       }
       const page = await activeBrowser.newPage();
+      // Load cookies
+      // eslint-disable-next-line no-undef
+      const cookiesArg = process.argv[3];
+      const cookies = JSON.parse(cookiesArg); // Ensure this is the correct argument index
+
+      for (const cookie of cookies) {
+        await page.setCookie(cookie);
+      }
 
       await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
       await page.goto(USER_URLS[i]).catch(e => console.error(`Error navigating to ${USER_URLS[i]}:`, e));
