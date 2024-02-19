@@ -83,6 +83,10 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
         window.electronAPI.loginWithTwitch();
     }
 
+    const loginWithYouTube = () => {
+        window.electronAPI.loginWithYouTube();
+    }
+
     return (
         <div className='setup-container' >
             <h2 className='setup-header'>Setup</h2>
@@ -91,7 +95,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
                     {/* <img src={TwitchBadge} alt="Twitch" className='login-badge' /> */}
                     <span>Login with Twitch</span>
                 </div>
-                <div className='login-card youtube' onClick={() => console.log('YouTube login placeholder')}>
+                <div className='login-card youtube' onClick={loginWithYouTube}>
                     {/* <img src={YouTubeBadge} alt="YouTube" className='login-badge' /> */}
                     <span>Login with YouTube</span>
                 </div>

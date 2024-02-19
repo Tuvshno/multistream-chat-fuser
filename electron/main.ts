@@ -96,9 +96,13 @@ function createWindow() {
     const urls = store.get('urls')
     const urlsJson = JSON.stringify(urls);
 
-    const cookiesPath = path.join(app.getPath('userData'), 'twitch-cookies.json'); // Ensure this path is correct and accessible
-    const cookies = JSON.parse(fs.readFileSync(cookiesPath, 'utf-8'));
-    const cookiesJson = JSON.stringify(cookies);
+    const cookiesTWPath = path.join(app.getPath('userData'), 'twitch-cookies.json'); // Ensure this path is correct and accessible
+    const cookiesTW = JSON.parse(fs.readFileSync(cookiesTWPath, 'utf-8'));
+    const cookiesTWJson = JSON.stringify(cookiesTW);
+
+    const cookiesYTPath = path.join(app.getPath('userData'), 'youtube-cookies.json'); // Ensure this path is correct and accessible
+    const cookiesYT = JSON.parse(fs.readFileSync(cookiesYTPath, 'utf-8'));
+    const cookiesYTJson = JSON.stringify(cookiesYT);
 
     const workerPath = app.isPackaged
       ? path.join(process.resourcesPath, 'worker.js') // Path when packaged
@@ -110,7 +114,7 @@ function createWindow() {
     if (app.isPackaged) {
       // In production, set NODE_PATH to 'app.asar.unpacked/node_modules'
       const nodeModulesPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules');
-      child = spawn('node', [workerPath, urlsJson, cookiesJson], {
+      child = spawn('node', [workerPath, urlsJson, cookiesTWJson, cookiesYTJson], {
         stdio: 'pipe', // Use 'pipe' to handle stdio streams manually
         windowsHide: false, // Hide the terminal window on Windows
         env: {
@@ -123,7 +127,7 @@ function createWindow() {
 
     }
     else {
-      child = spawn('node', [workerPath, urlsJson, cookiesJson], {
+      child = spawn('node', [workerPath, urlsJson, cookiesTWJson, cookiesYTJson], {
         stdio: 'pipe', // Use 'pipe' to handle stdio streams manually
         windowsHide: false // Hide the terminal window on Windows
       });
@@ -172,9 +176,13 @@ function createWindow() {
     // Open the Twitch authentication window
     createTwitchAuthWindow();
 
-    // This handler doesn't need to return anything for now,
-    // but you could return a success message or result in the future.
   });
+
+  ipcMain.handle('loginWithYouTube', async () => {
+    console.log('Attempting to log in with YouTube');
+
+    createYouTubeAuthWindow();
+  })
 
   function createTwitchAuthWindow() {
     const authWindow = new BrowserWindow({
@@ -208,6 +216,35 @@ function createWindow() {
     return authWindow;
   }
 
+  function createYouTubeAuthWindow() {
+    const authWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      }
+    });
+
+    const youtubeAuthUrl = 'https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den%26next%3D%252Fwatch%253Fv%253DNTjX2dagmec&hl=en&ifkv=ATuJsjwki4jqhVqDBZXl8mlBZ5jIQm1HlDi-LIoYNv-1_6yXBpEo5K-2LdQbhDq9MxbQD8KrJwVOIQ&passive=true&service=youtube&uilel=3&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S-284669518%3A1708369882580662&theme=glif';
+    authWindow.loadURL(youtubeAuthUrl);
+
+    authWindow.webContents.on('did-navigate', async (event, url) => {
+      // Check if the new URL does not include 'accounts.google.com'
+      if (!url.includes('accounts.google.com')) {
+        // Capture cookies as this indicates we've navigated away from the Google accounts domain
+        const cookies = await authWindow.webContents.session.cookies.get({});
+        console.log('YouTube Login Cookies:', cookies);
+        const filePath = path.join(app.getPath('userData'), 'youtube-cookies.json');
+        fs.writeFileSync(filePath, JSON.stringify(cookies, null, 2));
+
+        // Close the authentication window
+        authWindow.close();
+      }
+    });
+
+    return authWindow;
+  }
 
   // Workers --------------------------------------------
 

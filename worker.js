@@ -153,12 +153,19 @@ wss.on('connection', function connection(ws) {
         activeBrowser = await puppeteer.launch({ headless: "new" }); // Ensure headless is set to true or false based on your requirement
       }
       const page = await activeBrowser.newPage();
-      // Load cookies
+      // Load cookies Twitch
       // eslint-disable-next-line no-undef
-      const cookiesArg = process.argv[3];
-      const cookies = JSON.parse(cookiesArg); // Ensure this is the correct argument index
-
-      for (const cookie of cookies) {
+      const cookiesTWArg = process.argv[3];
+      const cookiesTW = JSON.parse(cookiesTWArg); // Ensure this is the correct argument index
+      for (const cookie of cookiesTW) {
+        await page.setCookie(cookie);
+      }
+      
+      // Load cookies Twitch
+      // eslint-disable-next-line no-undef
+      const cookiesYTArg = process.argv[4];
+      const cookiesYT = JSON.parse(cookiesYTArg); // Ensure this is the correct argument index
+      for (const cookie of cookiesYT) {
         await page.setCookie(cookie);
       }
 
