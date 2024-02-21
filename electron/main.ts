@@ -155,6 +155,21 @@ function createWindow() {
 
   })
 
+  ipcMain.handle('send-message', async (_event, data) => {
+    console.log('sending message to child process:', data);
+
+    const message = JSON.stringify({
+      type: 'message',
+      content: data
+    });
+
+    if (child && !child.stdin?.destroyed) {
+      child.stdin?.write(message + '\n'); // Sending the structured message to the child process's standard input
+    } else {
+      console.log('Child process stdin is not available or has been destroyed.');
+    }
+  });
+
   ipcMain.handle('open-settings-window', async () => {
     console.log('setup updated');
     store.set('setup', true);
@@ -226,24 +241,29 @@ function createWindow() {
       }
     });
 
-    const youtubeAuthUrl = 'https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den%26next%3D%252Fwatch%253Fv%253DNTjX2dagmec&hl=en&ifkv=ATuJsjwki4jqhVqDBZXl8mlBZ5jIQm1HlDi-LIoYNv-1_6yXBpEo5K-2LdQbhDq9MxbQD8KrJwVOIQ&passive=true&service=youtube&uilel=3&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S-284669518%3A1708369882580662&theme=glif';
+    const youtubeAuthUrl = 'https://accounts.google.com';
     authWindow.loadURL(youtubeAuthUrl);
 
     authWindow.webContents.on('did-navigate', async (event, url) => {
       // Check if the new URL does not include 'accounts.google.com'
       if (!url.includes('accounts.google.com')) {
-        // Capture cookies as this indicates we've navigated away from the Google accounts domain
-        const cookies = await authWindow.webContents.session.cookies.get({});
-        console.log('YouTube Login Cookies:', cookies);
-        const filePath = path.join(app.getPath('userData'), 'youtube-cookies.json');
-        fs.writeFileSync(filePath, JSON.stringify(cookies, null, 2));
+        // Navigate to YouTube's main page to ensure all session cookies are set
+        authWindow.loadURL('https://www.youtube.com/');
 
-        // Close the authentication window
-        authWindow.close();
+        authWindow.webContents.once('did-finish-load', async () => {
+          // Now that we're on YouTube and the page has loaded, capture cookies
+          // const cookies = await authWindow.webContents.session.cookies.get({});
+          // console.log('YouTube Login Cookies:', cookies);
+          // const filePath = path.join(app.getPath('userData'), 'youtube-cookies.json');
+          // fs.writeFileSync(filePath, JSON.stringify(cookies, null, 2));
+
+          // Close the authentication window
+        });
       }
     });
 
     return authWindow;
+
   }
 
   // Workers --------------------------------------------
