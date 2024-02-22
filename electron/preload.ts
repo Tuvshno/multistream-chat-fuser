@@ -104,7 +104,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.removeListener('setup-updated', func);
   },
   loginWithTwitch: () => ipcRenderer.invoke('loginWithTwitch'),
-  loginWithYouTube: () => ipcRenderer.invoke('loginWithYouTube')
+  loginWithYouTube: () => ipcRenderer.invoke('loginWithYouTube'),
+  closeServer: () => ipcRenderer.invoke('closeServer')
 
 })
 

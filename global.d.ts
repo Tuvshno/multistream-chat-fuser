@@ -17,6 +17,7 @@ declare global {
       removeSetupUpdatedListener: (func: (updatedSetup: boolean) => void) => void;
       loginWithTwitch: () => Promise<void>;
       loginWithYouTube: () => Promise<void>;
+      closeServer: () => Promise<void>;
 
       
       // ... any other methods you have

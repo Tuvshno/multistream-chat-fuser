@@ -23,6 +23,8 @@ const Chat = () => {
 
   const [socketError, setSocketError] = useState<boolean>(false);
 
+  const [currentLink, setCurrentLink] = useState<number>(0);
+
   const MAX_MESSAGES = 1000;
   const send = () => {
     console.log('sending message');
@@ -37,7 +39,12 @@ const Chat = () => {
     window.electronAPI.startServer();
     window.electronAPI.getFontSize().then((fs) => {
       setFontSize(fs);
-  });
+    });
+
+    return () => {
+      window.electronAPI.closeServer();
+    };
+
   }, []);
 
   const MAX_RECONNECT_ATTEMPTS = 5;
@@ -89,7 +96,10 @@ const Chat = () => {
             console.log('Successfully loaded all scripts:', message.urls);
             setConnected(true);
             setConnectedURLS(message.urls);
-
+            break;
+          case 'link':
+            console.log('Working on next link:', message.linkNum);
+            setCurrentLink(message.linkNum);
             break;
           default:
             console.error('Unknown message type:', message.type);
@@ -157,6 +167,12 @@ const Chat = () => {
         <div>
           <div className="spinner"></div>
           <div className="connected-message">Connecting to chats... </div>
+        </div>
+      }
+
+      {currentLink > 0 &&
+        <div className='connected-message-link'>
+          Working on Link {currentLink}
         </div>
       }
 

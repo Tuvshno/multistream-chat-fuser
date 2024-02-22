@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import ChatMessage from './components/ChatMessage';
 import './setup.css'
-import TwitchBadge from './assets/Twitch Badge.png'
-import YouTubeBadge from './assets/YT_Badge_18.png'
 
 type SetSetupFunction = (value: boolean) => void; // Example function type that takes a boolean and returns void
 
 // Define the props for the SetupScreen component
 interface SetupScreenProps {
     setSetup: SetSetupFunction;
-}
+}   
 
 const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
     const [urls, setUrls] = useState(['']);
@@ -120,7 +118,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
             <button onClick={goToMain} className='setup-button'>Go to Main Screen</button>
             <button onClick={handleSubmit} className='setup-button save'>Save</button>
 
-            <div className='version'>Version 1.2.8</div>
+            <div className='version'>Version 1.3.4</div>
         </div >
     );
 };

@@ -65,7 +65,6 @@ function createWindow() {
     console.log(boolSetup)
     store.set('setup', boolSetup);
     // win?.webContents.send('setupChanged', boolSetup);
-
   })
 
   ipcMain.handle('saveURLS', async (_event, urls) => {
@@ -93,23 +92,35 @@ function createWindow() {
 
   ipcMain.handle('startServer', async () => {
     console.log('server handling...')
+
     const urls = store.get('urls')
     const urlsJson = JSON.stringify(urls);
 
-    const cookiesTWPath = path.join(app.getPath('userData'), 'twitch-cookies.json'); // Ensure this path is correct and accessible
-    const cookiesTW = JSON.parse(fs.readFileSync(cookiesTWPath, 'utf-8'));
-    const cookiesTWJson = JSON.stringify(cookiesTW);
+    // Define paths for Twitch and YouTube cookie files
+    const cookiesTWPath = path.join(app.getPath('userData'), 'twitch-cookies.json');
+    const cookiesYTPath = path.join(app.getPath('userData'), 'youtube-cookies.json');
 
-    const cookiesYTPath = path.join(app.getPath('userData'), 'youtube-cookies.json'); // Ensure this path is correct and accessible
-    const cookiesYT = JSON.parse(fs.readFileSync(cookiesYTPath, 'utf-8'));
-    const cookiesYTJson = JSON.stringify(cookiesYT);
+    // Initialize cookie data variables
+    let cookiesTWJson = '[]'; // Default to empty array in JSON if file doesn't exist
+    let cookiesYTJson = '[]';
+
+    // Check if Twitch cookie file exists and read it
+    if (fs.existsSync(cookiesTWPath)) {
+      const cookiesTW = JSON.parse(fs.readFileSync(cookiesTWPath, 'utf-8'));
+      cookiesTWJson = JSON.stringify(cookiesTW);
+    }
+
+    // Check if YouTube cookie file exists and read it
+    if (fs.existsSync(cookiesYTPath)) {
+      const cookiesYT = JSON.parse(fs.readFileSync(cookiesYTPath, 'utf-8'));
+      cookiesYTJson = JSON.stringify(cookiesYT);
+    }
 
     const workerPath = app.isPackaged
       ? path.join(process.resourcesPath, 'worker.js') // Path when packaged
       : path.join('./worker.js');
 
     console.log(workerPath)
-    let child;
 
     if (app.isPackaged) {
       // In production, set NODE_PATH to 'app.asar.unpacked/node_modules'
@@ -133,15 +144,29 @@ function createWindow() {
       });
     }
 
+    // if (app.isPackaged) {
+    //   // In production, adjust the path if needed
+    //   child = fork(workerPath, [urlsJson, cookiesTWJson, cookiesYTJson], {
+    //     stdio: ['inherit', 'inherit', 'inherit', 'ipc'], // 'ipc' enables Inter-Process Communication
+    //     env: {
+    //       ...process.env, // Inherit the parent's environment variables
+    //     }
+    //   });
+    // } else {
+    //   child = fork(workerPath, [urlsJson, cookiesTWJson, cookiesYTJson], {
+    //     stdio: ['inherit', 'inherit', 'inherit', 'ipc'] // 'ipc' for IPC communication
+    //   });
+    // }
+
 
     log.info('Server has been started');
 
-    child.stdout.on('data', (data) => {
+    child.stdout?.on('data', (data) => {
       console.log(`stdout: ${data}`);
       log.info(`Child stdout:\n${data}`);
     });
 
-    child.stderr.on('data', (data) => {
+    child.stderr?.on('data', (data) => {
       console.error(`Child stderr:\n${data}`);
       log.info(`Child stderr:\n${data}`);
 
@@ -153,21 +178,33 @@ function createWindow() {
 
     });
 
+    // child.send({ type: 'newMessage', content: 'Hello from parent' });
   })
 
   ipcMain.handle('open-settings-window', async () => {
     console.log('setup updated');
     store.set('setup', true);
     win?.webContents.send('setup-updated', true);
-
-    child?.send('shutdown');
-    setTimeout(() => {
-      child?.kill(); // Terminate the child process
-
-    }, 3000)
-    console.log('Child process terminated');
-    log.info('Child process terminated');
   });
+
+  ipcMain.handle('closeServer', async () => {
+    console.log('clossing server');
+    if (child && !child.killed) {
+      const command = JSON.stringify({ action: 'shutdown' });
+      child.stdin?.write(command + "\n");
+      console.log('Shutdown command sent to child process.');
+
+      // Wait for child process to exit gracefully
+      await new Promise<void>(resolve => {
+        child?.on('exit', () => {
+          console.log('Child process exited gracefully.');
+          resolve();
+        });
+      });
+    } else {
+      console.log('No child process to terminate.');
+    }
+  })
 
   // IPC event handler for 'loginWithTwitch'
   ipcMain.handle('loginWithTwitch', async () => {
@@ -197,7 +234,7 @@ function createWindow() {
     authWindow.loadURL('https://www.twitch.tv/login');
 
     // Monitor navigation to check if we navigate away from the login page
-    authWindow.webContents.on('did-navigate', async (event, url) => {
+    authWindow.webContents.on('did-navigate', async (_event: Event, url: string) => {
       // Check if the new URL is not the Twitch login page
       if (!url.includes('https://www.twitch.tv/login')) {
         // Capture cookies as this indicates we've navigated away from the login page
@@ -226,22 +263,28 @@ function createWindow() {
       }
     });
 
-    const youtubeAuthUrl = 'https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den%26next%3D%252Fwatch%253Fv%253DNTjX2dagmec&hl=en&ifkv=ATuJsjwki4jqhVqDBZXl8mlBZ5jIQm1HlDi-LIoYNv-1_6yXBpEo5K-2LdQbhDq9MxbQD8KrJwVOIQ&passive=true&service=youtube&uilel=3&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S-284669518%3A1708369882580662&theme=glif';
+    const youtubeAuthUrl = 'https://www.youtube.com/live_chat?is_popout=1&v=HugDvUEbsKc';
     authWindow.loadURL(youtubeAuthUrl);
 
-    authWindow.webContents.on('did-navigate', async (event, url) => {
-      // Check if the new URL does not include 'accounts.google.com'
-      if (!url.includes('accounts.google.com')) {
-        // Capture cookies as this indicates we've navigated away from the Google accounts domain
-        const cookies = await authWindow.webContents.session.cookies.get({});
-        console.log('YouTube Login Cookies:', cookies);
-        const filePath = path.join(app.getPath('userData'), 'youtube-cookies.json');
-        fs.writeFileSync(filePath, JSON.stringify(cookies, null, 2));
+    // Listen for the 'close' event
+    authWindow.on('close', async (e) => {
+      // Prevent the window from closing immediately
+      e.preventDefault();
 
-        // Close the authentication window
-        authWindow.close();
-      }
+      // Capture cookies before the window closes
+      const cookies = await authWindow.webContents.session.cookies.get({});
+      console.log('YouTube Login Cookies:', cookies);
+      const filePath = path.join(app.getPath('userData'), 'youtube-cookies.json');
+      fs.writeFileSync(filePath, JSON.stringify(cookies, null, 2));
+
+      // Now that cookies are saved, allow the window to close
+      authWindow.removeAllListeners('close');
+      authWindow.close();
     });
+
+    // authWindow.webContents.on('did-navigate', async (event, url) => {
+    //   // Your existing navigation logic...
+    // });
 
     return authWindow;
   }
@@ -302,4 +345,4 @@ autoUpdater.on('update-downloaded', () => {
 });
 
 initialize();
-app.whenReady().then(createSplashWindow).then(createWindow);
+app.whenReady().then(createSplashWindow).then(createWindow)

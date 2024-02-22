@@ -103,6 +103,7 @@ const wss = new websocket.WebSocketServer({ port: 8080 });
 wss.on('connection', function connection(ws) {
   ws.on('message', function message(data) {
     console.log('received: %s', data);
+
   });
   console.log('CONNECTED!');
 
@@ -116,7 +117,7 @@ wss.on('connection', function connection(ws) {
       activeBrowser = null; // Reset the activeBrowser variable
     }
 
-    activeBrowser = await puppeteer.launch({ headless: false });
+    activeBrowser = await puppeteer.launch({ headless: "new" });
     // const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
 
     // eslint-disable-next-line no-undef
@@ -149,27 +150,33 @@ wss.on('connection', function connection(ws) {
 
 
     for (let i = 0; i < USER_URLS.length; i++) {
-      if (!activeBrowser) {
-        activeBrowser = await puppeteer.launch({ headless: "new" }); // Ensure headless is set to true or false based on your requirement
-      }
+      // if (!activeBrowser) {
+      //   activeBrowser = await puppeteer.launch({ headless: "new" }); // Ensure headless is set to true or false based on your requirement
+      // }
       const page = await activeBrowser.newPage();
-      // Load cookies Twitch
+
+      // Load Twitch cookies if they exist and are not empty
       // eslint-disable-next-line no-undef
       const cookiesTWArg = process.argv[3];
       const cookiesTW = JSON.parse(cookiesTWArg); // Ensure this is the correct argument index
-      for (const cookie of cookiesTW) {
-        await page.setCookie(cookie);
+      if (Array.isArray(cookiesTW) && cookiesTW.length > 0) {
+        for (const cookie of cookiesTW) {
+          await page.setCookie(cookie);
+        }
       }
-      
-      // Load cookies Twitch
+
+      // Load YouTube cookies if they exist and are not empty
       // eslint-disable-next-line no-undef
       const cookiesYTArg = process.argv[4];
       const cookiesYT = JSON.parse(cookiesYTArg); // Ensure this is the correct argument index
-      for (const cookie of cookiesYT) {
-        await page.setCookie(cookie);
+      if (Array.isArray(cookiesYT) && cookiesYT.length > 0) {
+        for (const cookie of cookiesYT) {
+          await page.setCookie(cookie);
+        }
       }
 
       await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
+
       await page.goto(USER_URLS[i]).catch(e => console.error(`Error navigating to ${USER_URLS[i]}:`, e));
 
 
@@ -181,24 +188,45 @@ wss.on('connection', function connection(ws) {
       });
     }
 
-    // Attempt to wait for selectors and handle failures
     for (let i = 0; i < pageData.length; i++) {
+      ws.send(JSON.stringify({ type: 'link', linkNum: i+1 }));
+
       try {
-        await pageData[i].page.waitForSelector(pageData[i].selector);
+        // Check first for YouTube pages if the "Chat is disabled" message is present
+        if (pageData[i].platform === 0) { // 0 represents YouTube
+          const disabledChatMessageSelector = 'yt-formatted-string#text.style-scope.yt-live-chat-message-renderer';
+          const isChatDisabled = await pageData[i].page.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return !!element && element.textContent.includes('Chat is disabled for this live stream.');
+          }, disabledChatMessageSelector);
+
+          if (isChatDisabled) {
+            throw new Error('Chat is disabled for this live stream, indicating an expired or invalid link.');
+          }
+        }
+
+        // If the "Chat is disabled" message is not found, or if it's not a YouTube page, wait for the usual selector
+        await pageData[i].page.waitForSelector(pageData[i].selector, { timeout: 5000 });
+
+
       } catch (e) {
-        console.error(`Failed to find selector ${pageData[i].selector} on page ${i + 1}:`, e);
+        console.error(`Failed on page ${i + 1}: ${e.message}`);
         ws.send(JSON.stringify({ type: 'error', errorUrl: USER_URLS[i] }));
 
-        // Remove the failed pageData object from the array
+        // Remove the failed pageData object and the corresponding URL from the array
         pageData.splice(i, 1);
+        USER_URLS.splice(i, 1); // Also remove the URL that resulted in an error
         i--; // Adjust index since we removed an item
       }
     }
 
+    // Send only the URLs that didn't result in errors
     ws.send(JSON.stringify({
       type: 'success',
-      urls: USER_URLS // This will contain only the URLs of the pages that passed the waitForSelector check
+      urls: USER_URLS // This now contains only the URLs of the pages that passed all checks
     }));
+
+    ws.send(JSON.stringify({ type: 'link', linkNum: 0 }));
 
     // Now, when fetching chat data, map over the pageData array
     fetchInterval = setInterval(async () => {
@@ -231,21 +259,32 @@ wss.on('connection', function connection(ws) {
 });
 
 // eslint-disable-next-line no-undef
-process.on('message', (message) => {
-  if (message === 'shutdown') {
-    console.log('Shutting down WebSocket server...');
+// process.stdin.on('data', async (data) => {
+//   try {
+//     const message = JSON.parse(data.toString());
+//     if (message.action === 'shutdown') {
+//       console.log("Shutting down...");
 
-    // Close all WebSocket connections
-    wss.clients.forEach(function each(client) {
-      client.terminate();
-    });
+//       if (wss) {
+//         await new Promise(resolve => wss.close(resolve));
+//         console.log("WebSocket server closed.");
+//       }
 
-    // Close the WebSocket server
-    wss.close(() => {
-      console.log('WebSocket server closed.');
-      // Exit the process if needed
-      // eslint-disable-next-line no-undef
-      process.exit(0);
-    });
-  }
-});
+//       if (fetchInterval) {
+//         clearInterval(fetchInterval);
+//         console.log("Fetch interval cleared.");
+//       }
+
+//       if (activeBrowser) {
+//         await activeBrowser.close();
+//         console.log("Puppeteer browser closed.");
+//       }
+
+//       console.log("Shutdown sequence completed.");
+//       // eslint-disable-next-line no-undef
+//       process.exit(0);
+//     }
+//   } catch (error) {
+//     console.error("Error parsing message from parent:", error);
+//   }
+// });
