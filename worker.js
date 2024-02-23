@@ -17,6 +17,7 @@ console.log('Looking for Client Connection...')
 
 async function getYouTubePageData(page) {
   const chatData = await page.evaluate(() => {
+    let messageType = 'Message'
     const items = Array.from(document.querySelectorAll('#items.style-scope.yt-live-chat-item-list-renderer > *'));
     return items.map(item => {
       const platform = 'YouTube';
@@ -43,7 +44,7 @@ async function getYouTubePageData(page) {
 
       item.remove(); // Remove the item from the DOM
 
-      return { platform, authorName, message: messageParts, imgSrcs, authorColor };
+      return { platform, messageType, authorName, message: messageParts, imgSrcs, authorColor };
     });
   });
   return chatData;
@@ -51,34 +52,51 @@ async function getYouTubePageData(page) {
 
 async function getTwitchPageData(page) {
   const chatData = await page.evaluate(() => {
-    // Hide elements with data-test-selector="user-notice-line" instead of removing them
-    const userNotices = Array.from(document.querySelectorAll('[data-test-selector="user-notice-line"]:not(.processed)'));
-    userNotices.forEach(notice => {
-      console.log(notice.textContent.trim());
+    let allMessages = []; // Array to hold all messages including user notices and chat messages
 
-      notice.style.display = 'none';
-      notice.classList.add('processed'); // Mark as processed
+    // Function to process each child node within the message
+    const processNode = (node) => {
+      if (node.nodeType === Node.TEXT_NODE || node.classList.contains('text-fragment')) {
+        return node.textContent.trim();
+      } else if (node.nodeType === Node.ELEMENT_NODE && node.querySelector('img')) {
+        return node.querySelector('img').src;
+      }
+      return '';
+    };
+
+    // Get and process all user notices
+    const userNotices = Array.from(document.querySelectorAll('[data-test-selector="user-notice-line"]:not(.processed)'));
+    userNotices.forEach(item => {
+      console.log('user notice')
+      let messageType, authorName, messageParts, authorColor = 'rgb(138, 43, 226)', subscriptionInfo;
+
+      authorName = item.querySelector('.chatter-name')?.textContent.trim() || 'Anonymous';
+
+      const subscriptionText = item.querySelector('.CoreText-sc-1txzju1-0')?.textContent.trim();
+      if (subscriptionText && subscriptionText.includes('Subscribed')) {
+        messageType = 'Subscription';
+        subscriptionInfo = subscriptionText;
+
+        const subscriptionMessageElement = item.querySelector('.chat-resubscription-message__custom-message');
+        messageParts = subscriptionMessageElement ? Array.from(subscriptionMessageElement.childNodes).map(processNode).filter(part => part.length > 0).join(' ') : '';
+
+        allMessages.push({ platform: 'Twitch', messageType, authorName, subscriptionInfo, message: messageParts, authorColor });
+      }
+
+      item.style.display = 'none'; // Hide the item instead of removing it from the DOM
+      item.classList.add('processed'); // Mark as processed
+
     });
 
-    const items = Array.from(document.querySelectorAll('.chat-line__message:not(.processed)')); // Use the correct selector for chat messages and skip already processed messages
-    return items.map(item => {
-      const platform = 'Twitch';
-
-      // Function to process each child node within the message
-      const processNode = (node) => {
-        if (node.nodeType === Node.TEXT_NODE || node.classList.contains('text-fragment')) {
-          // For text nodes and elements with class 'text-fragment', get the text content
-          return node.textContent.trim();
-        } else if (node.nodeType === Node.ELEMENT_NODE && node.querySelector('img')) {
-          // For element nodes containing images, get the src of the image
-          return node.querySelector('img').src;
-        }
-        return '';
-      };
+    // Process the normal chat messages
+    const chatMessages = Array.from(document.querySelectorAll('.chat-line__message:not(.processed)'));
+    chatMessages.forEach(item => {
+      let platform = 'Twitch';
+      let messageType = 'Message';
 
       // Check for "replying" message
-      const replyingElement = item.querySelector('.CoreText-sc-1txzju1-0.cCvSAC'); // Adjust the selector to target the "replying" message element
-      const replyingMessage = replyingElement ? replyingElement.textContent.trim() : '';
+      const replyingElement = item.querySelector('.CoreText-sc-1txzju1-0.cCvSAC');
+      const replyingMessage = replyingElement ? replyingElement.getAttribute('title') : ''; // Use 'title' attribute to get the full replying message text
 
       const messageElement = item.querySelector('[data-a-target="chat-line-message-body"]');
       const messageParts = messageElement ? Array.from(messageElement.childNodes).map(processNode).filter(part => part.length > 0).join(' ') : 'Message Deleted';
@@ -88,14 +106,30 @@ async function getTwitchPageData(page) {
       const authorColor = authorElement?.style.color || ''; // Get the color style
       const imgSrcs = Array.from(item.querySelectorAll('img.chat-badge')).map(img => img.src);
 
-      item.style.display = 'none'; // Hide the item instead of removing it from the DOM
-      item.classList.add('processed'); // Mark as processed to avoid reprocessing
+      //Check highlighted
+      const highlighted = item.querySelector('.chat-line__message-body--highlighted')
+      if (highlighted)
+        messageType = 'Highlighted';
 
-      return { platform, authorName, message: messageParts, imgSrcs, authorColor };
+      item.style.display = 'none'; // Hide the item instead of removing it from the DOM
+      item.classList.add('processed'); // Mark as processed
+
+      const chatMessage = { platform, messageType, authorName, message: messageParts, imgSrcs, authorColor };
+
+      if (replyingMessage) {
+        chatMessage.replyingTo = replyingMessage; // Add replying message text to the object
+      }
+
+      allMessages.push(chatMessage);
+
     });
+
+    return allMessages; // Return all messages including user notices and chat messages
   });
+
   return chatData;
 }
+
 
 const wss = new websocket.WebSocketServer({ port: 8080 });
 //MEssage Socket has been created here
@@ -189,7 +223,7 @@ wss.on('connection', function connection(ws) {
     }
 
     for (let i = 0; i < pageData.length; i++) {
-      ws.send(JSON.stringify({ type: 'link', linkNum: i+1 }));
+      ws.send(JSON.stringify({ type: 'link', linkNum: i + 1 }));
 
       try {
         // Check first for YouTube pages if the "Chat is disabled" message is present

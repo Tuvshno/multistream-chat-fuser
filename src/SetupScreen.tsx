@@ -15,6 +15,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
     const dummyInfo = {
         "id": "1",
         "platform": "Twitch",
+        "messageType" : "Message",
         "authorName": "Username",
         "message": "This is a chat message",
         "imgSrcs": ["https://static-cdn.jtvnw.net/badges/v1/4b76d5f2-91cc-4400-adf2-908a1e6cfd1e/1"],

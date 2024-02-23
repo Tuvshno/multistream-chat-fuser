@@ -49,3 +49,27 @@
 .message-username {
   font-weight: 700; /* Equivalent to font-semibold */
 }
+
+.replying-message {
+  color: rgb(192, 192, 192);
+  display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+} 
+.message-icon {
+  margin-right: 4px; /* Adjust the spacing between the icon and the text as needed */
+  width: 16px;
+  height: 16px;
+}
+
+.highlighted-message {
+  background-color: rgb(130, 40, 168);
+}
+
+.subscription {
+  background-color: rgba(115, 66, 124, 0.3); /* Equivalent to hover:bg-gray-500/30 */
+
+}
