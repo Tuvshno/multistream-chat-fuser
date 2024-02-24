@@ -66,14 +66,26 @@
 }
 
 .highlighted-message {
-  background-color: rgb(130, 40, 168);
+  background-color: rgb(117,94,188);
+}
+
+
+
+.message-link {
+  color: rgb(193, 126, 255);
 }
 
 .subscription {
   background-color: rgba(115, 66, 124, 0.3); /* Equivalent to hover:bg-gray-500/30 */
 
 }
+.subscriber-icon {
+  align-self:first baseline;
+  margin-right: 5px;
+}
 
-.message-link {
-  color: rgb(193, 126, 255);
+.subscriber-name {
+  color: rgb(197, 135, 255);
+  font-weight: bold;
+  display: flex;
 }

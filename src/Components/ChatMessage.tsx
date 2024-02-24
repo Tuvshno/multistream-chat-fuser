@@ -1,6 +1,7 @@
 import { MessageModel } from '../utils/models'
 import YouTubeBadge from '../assets/YT_Badge_18.png'
 import TwitchBadge from '../assets/Twitch_Badge_18.png'
+import { FaStar } from "react-icons/fa6";
 
 import './css/ChatMessage.css'
 
@@ -45,7 +46,7 @@ const ChatMessage = ({
         const parts = message.split(urlRegex);
 
         return (
-            <span className="message">
+            <span className={`message ${messageType === 'Highlighted' && 'highlighted-message'}`}>
                 {parts.map((part, index) => {
                     if (part.match(urlRegex)) {
                         // Check if the URL points to an image, is a Twitch CDN URL, or is a YouTube image URL
@@ -65,13 +66,25 @@ const ChatMessage = ({
         )
     };
 
+    // Function to extract subscriber's name and message
+    const renderSubscriptionInfo = (info: string) => {
+        const [name, ...messageParts] = info.split(' ');
+        const message = messageParts.join(' ');
+
+        return (
+            <div className="subscription-info">
+                <div className="subscriber-name"><FaStar className='message-badge' /> {name}</div> {/* Adding the React star icon */}
+                <div>{message}</div>
+            </div>
+        );
+    };
 
     return (
         messageType === 'Subscription' ?
             <div className={`message-container subscription ${className}`} style={style}>
-                <div>
-                    {subscriptionInfo}
-                </div>
+                {subscriptionInfo &&
+                    renderSubscriptionInfo(subscriptionInfo) // Using the new function to render subscription info
+                }
                 {message &&
                     <div>
                         <div className="chat-message-info">
@@ -91,7 +104,7 @@ const ChatMessage = ({
             <div
                 className={
                     `message-container 
-                    ${messageType === 'Highlighted' && 'highlighted-message'}
+                    
                     ${className}`
                 }
                 style={style}
