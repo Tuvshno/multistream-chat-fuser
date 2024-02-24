@@ -73,3 +73,7 @@
   background-color: rgba(115, 66, 124, 0.3); /* Equivalent to hover:bg-gray-500/30 */
 
 }
+
+.message-link {
+  color: rgb(193, 126, 255);
+}

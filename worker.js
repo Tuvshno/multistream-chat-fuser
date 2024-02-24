@@ -60,6 +60,9 @@ async function getTwitchPageData(page) {
         return node.textContent.trim();
       } else if (node.nodeType === Node.ELEMENT_NODE && node.querySelector('img')) {
         return node.querySelector('img').src;
+      } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === 'a') {
+        // If the node is an 'a' element (link), return its href attribute
+        return node.href;
       }
       return '';
     };
@@ -78,9 +81,15 @@ async function getTwitchPageData(page) {
         subscriptionInfo = subscriptionText;
 
         const subscriptionMessageElement = item.querySelector('.chat-resubscription-message__custom-message');
-        messageParts = subscriptionMessageElement ? Array.from(subscriptionMessageElement.childNodes).map(processNode).filter(part => part.length > 0).join(' ') : '';
+        if (subscriptionMessageElement) {
+          messageParts = subscriptionMessageElement ? Array.from(subscriptionMessageElement.childNodes).map(processNode).filter(part => part.length > 0).join(' ') : '';
+          const imgSrcs = Array.from(item.querySelectorAll('img.chat-badge')).map(img => img.src);
+          allMessages.push({ platform: 'Twitch', messageType, authorName, subscriptionInfo, message: messageParts, imgSrcs, authorColor });
 
-        allMessages.push({ platform: 'Twitch', messageType, authorName, subscriptionInfo, message: messageParts, authorColor });
+        }
+        else {
+          allMessages.push({ platform: 'Twitch', messageType, authorName, subscriptionInfo, message: messageParts, authorColor });
+        }
       }
 
       item.style.display = 'none'; // Hide the item instead of removing it from the DOM
@@ -262,6 +271,30 @@ wss.on('connection', function connection(ws) {
 
     ws.send(JSON.stringify({ type: 'link', linkNum: 0 }));
 
+    const enableDarkModeOnTwitch = async (page) => {
+      try {
+        // Wait for the settings button and click it
+        await page.waitForSelector('[data-a-target="chat-settings"]', { timeout: 5000 });
+        await page.click('[data-a-target="chat-settings"]');
+
+        // Wait for the dark mode toggle and click it
+        await page.waitForSelector('[data-a-target="darkmode-checkbox"]', { timeout: 5000 });
+        await page.click('[data-a-target="darkmode-checkbox"]');
+
+        // Wait for the close button and click it to close the settings menu
+        await page.waitForSelector('[data-test-selector="chat-settings-close-button-selector"]', { timeout: 5000 });
+        await page.click('[data-test-selector="chat-settings-close-button-selector"]');
+      } catch (error) {
+        console.error(`Failed to enable dark mode on Twitch page: ${error}`);
+      }
+    };
+
+    // Iterate through all pages and enable dark mode on Twitch pages
+    for (let data of pageData) {
+      if (data.platform === 1) { // 1 represents Twitch
+        await enableDarkModeOnTwitch(data.page);
+      }
+    }
     // Now, when fetching chat data, map over the pageData array
     fetchInterval = setInterval(async () => {
       try {
@@ -291,34 +324,3 @@ wss.on('connection', function connection(ws) {
     }, 100);
   })();
 });
-
-// eslint-disable-next-line no-undef
-// process.stdin.on('data', async (data) => {
-//   try {
-//     const message = JSON.parse(data.toString());
-//     if (message.action === 'shutdown') {
-//       console.log("Shutting down...");
-
-//       if (wss) {
-//         await new Promise(resolve => wss.close(resolve));
-//         console.log("WebSocket server closed.");
-//       }
-
-//       if (fetchInterval) {
-//         clearInterval(fetchInterval);
-//         console.log("Fetch interval cleared.");
-//       }
-
-//       if (activeBrowser) {
-//         await activeBrowser.close();
-//         console.log("Puppeteer browser closed.");
-//       }
-
-//       console.log("Shutdown sequence completed.");
-//       // eslint-disable-next-line no-undef
-//       process.exit(0);
-//     }
-//   } catch (error) {
-//     console.error("Error parsing message from parent:", error);
-//   }
-// });

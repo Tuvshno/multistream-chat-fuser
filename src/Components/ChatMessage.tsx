@@ -29,10 +29,18 @@ const ChatMessage = ({
             {authorName}
         </span>
     )
-
     const renderMessageContent = (message: string) => {
         // Regular expression to match URLs
         const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+        // Function to check if a URL points to an image, is from the Twitch CDN, or is a YouTube image URL
+        const isImageUrl = (url: string) => {
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', 'svg'];
+            const isTwitchCdnUrl = url.startsWith('https://static-cdn.jtvnw.net');
+            const isYoutubeImageUrl = url.startsWith('https://yt3.ggpht.com/');
+            return isTwitchCdnUrl || isYoutubeImageUrl || imageExtensions.some(extension => url.toLowerCase().endsWith(extension));
+        };
+
         // Split message by URLs and keep the URLs in the output array
         const parts = message.split(urlRegex);
 
@@ -40,8 +48,14 @@ const ChatMessage = ({
             <span className="message">
                 {parts.map((part, index) => {
                     if (part.match(urlRegex)) {
-                        // If the part is a URL, render it as an image
-                        return <img key={index} className="message-emote" src={part} />;
+                        // Check if the URL points to an image, is a Twitch CDN URL, or is a YouTube image URL
+                        if (isImageUrl(part)) {
+                            // Render it as an <img> tag
+                            return <img key={index} className="message-emote" src={part} alt="" />;
+                        } else {
+                            // If the URL does not point to an image, render it as a clickable link
+                            return <a key={index} href={part} target="_blank" rel="noopener noreferrer" className="message-link">{part}</a>;
+                        }
                     } else {
                         // If the part is text, render it as text
                         return part;
@@ -50,6 +64,7 @@ const ChatMessage = ({
             </span>
         )
     };
+
 
     return (
         messageType === 'Subscription' ?
