@@ -18,6 +18,7 @@ declare global {
       loginWithTwitch: () => Promise<void>;
       loginWithYouTube: () => Promise<void>;
       closeServer: () => Promise<void>;
+      isTwitchLoggedIn: () => Promise<boolean>;
 
       
       // ... any other methods you have

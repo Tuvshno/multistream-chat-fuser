@@ -105,7 +105,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   loginWithTwitch: () => ipcRenderer.invoke('loginWithTwitch'),
   loginWithYouTube: () => ipcRenderer.invoke('loginWithYouTube'),
-  closeServer: () => ipcRenderer.invoke('closeServer')
+  closeServer: () => ipcRenderer.invoke('closeServer'),
+  isTwitchLoggedIn: () => ipcRenderer.invoke('isTwitchLoggedIn'),
 
 })
 

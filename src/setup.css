@@ -22,11 +22,24 @@ body {
   color: #FFFFFF; /* Pure white for the header for emphasis */
   margin-bottom: 2rem; /* More space above the first input field */
 }
-
-.setup-url-input {
+.url-input-container {
   width: 90%;
+  display: flex;
 }
-
+.setup-url-input {
+  width: 100%;
+}
+.remove-url-button {
+  justify-self: center;
+  align-self: center;
+  margin-top: 10px;
+  margin-left: 10px;
+  color: rgb(255, 160, 160);
+  cursor: pointer;
+}
+.remove-url-button:hover {
+color: rgb(255, 83, 83);
+}
 .setup-url-input, .setup-button {
   padding: 0.75rem;
   margin-top: 1rem;
@@ -88,6 +101,12 @@ body {
   opacity: 20%;
 }
 
+.restart-highlight {
+  font-weight: bold;
+  color: rgb(255, 162, 162);
+  margin-top: 20px;
+}
+
 .setup-login-auth {
   display: flex;
   width: 80%;
@@ -134,4 +153,19 @@ body {
 .login-card span {
   font-size: 16px;
   font-weight: 600;
+}
+
+
+.return {
+  color: white;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  transition: background-color 0.2s ease-in-out;
+  cursor:pointer;
+}
+
+.return:hover {
+  color: #9f8eff;
+
 }

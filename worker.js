@@ -13,7 +13,6 @@ let isFirstFetch = true; // Flag to track the first fetch after a new connection
 let pageData;
 // Inside worker.mjs
 
-
 console.log('Looking for Client Connection...')
 
 async function getYouTubePageData(page) {

@@ -37,8 +37,8 @@ function createSplashWindow() {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 900,
     show: false, // Initially hide the main window
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
@@ -88,6 +88,14 @@ function createWindow() {
 
   ipcMain.handle('setWindowSize', async (_event, width, height) => {
     win?.setSize(width, height);
+  });
+
+  ipcMain.handle('isTwitchLoggedIn', async () => {
+    const cookiesTWPath = path.join(app.getPath('userData'), 'twitch-cookies.json');
+
+    const isLoggedIn = fs.existsSync(cookiesTWPath);
+
+    return isLoggedIn;
   });
 
   ipcMain.handle('startServer', async () => {
