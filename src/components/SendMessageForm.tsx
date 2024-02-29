@@ -1,37 +1,31 @@
-import { useState } from 'react'
-import './css/SendMessageForm.css'
+import { useState } from 'react';
+import './css/SendMessageForm.css';
 import { IoSettingsOutline } from "react-icons/io5";
 
 type SendMessageFormProps = {
-    onSend: (message: string) => void
-    className?: string
-}
+    onSend: (message: string) => void;
+    className?: string;
+};
 
-const MAX_MESSAGE_LENGTH = 300
-
-const SendMessageForm = ({ onSend  }: SendMessageFormProps) => {
-    const [message, setMessage] = useState('')
+const SendMessageForm = ({ onSend, className }: SendMessageFormProps) => {
+    const [message, setMessage] = useState('');
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-
-        const filteredMessage = message.trim().slice(0, MAX_MESSAGE_LENGTH)
-
+        e.preventDefault();
+        const filteredMessage = message;
         if (filteredMessage) {
-            onSend(filteredMessage)
+            onSend(filteredMessage);
         }
+        setMessage('');
+    };
 
-        setMessage('')
-    }
-
-const openSettingsWindow = () => {
-    console.log('sending message to open settings');
-    // onCloseWebSocket();
-    window.electronAPI.openSettingsWindow();
-}
+    const openSettingsWindow = () => {
+        console.log('Sending message to open settings');
+        window.electronAPI.openSettingsWindow();
+    };
 
     return (
-        <form className="send-message-form" onSubmit={handleSubmit}>
+        <form className={`send-message-form ${className || ''}`} onSubmit={handleSubmit}>
             <div className="send-message-form-container">
                 <input
                     type="text"
@@ -42,10 +36,9 @@ const openSettingsWindow = () => {
                 />
             </div>
             <div className='buttons'>
-                <button className='settings-button' onClick={openSettingsWindow}>
+                <button type="button" className='settings-button' onClick={openSettingsWindow}>
                     <IoSettingsOutline />
-                    </button>
-
+                </button>
                 <button
                     className="send-message-form-button"
                     type="submit"
@@ -53,9 +46,8 @@ const openSettingsWindow = () => {
                     Chat
                 </button>
             </div>
-
         </form>
-    )
-}
+    );
+};
 
-export default SendMessageForm
+export default SendMessageForm;

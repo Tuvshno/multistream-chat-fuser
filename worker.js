@@ -10,6 +10,7 @@ const path = require('path');
 let activeBrowser; // Track the active Puppeteer browser
 let fetchInterval; // Track the interval ID for fetching chat data
 let isFirstFetch = true; // Flag to track the first fetch after a new connection
+let pageData;
 // Inside worker.mjs
 
 
@@ -144,10 +145,6 @@ const wss = new websocket.WebSocketServer({ port: 8080 });
 //MEssage Socket has been created here
 
 wss.on('connection', function connection(ws) {
-  ws.on('message', function message(data) {
-    console.log('received: %s', data);
-
-  });
   console.log('CONNECTED!');
 
   (async () => {
@@ -189,7 +186,7 @@ wss.on('connection', function connection(ws) {
     ];
 
 
-    let pageData = [];
+    pageData = [];
 
 
     for (let i = 0; i < USER_URLS.length; i++) {
@@ -273,10 +270,34 @@ wss.on('connection', function connection(ws) {
 
     const enableDarkModeOnTwitch = async (page) => {
       try {
-        // Wait for the settings button and click it
+        // First, click the chat settings button
         await page.waitForSelector('[data-a-target="chat-settings"]', { timeout: 5000 });
         await page.click('[data-a-target="chat-settings"]');
 
+        // Check and click "Switch to Non-Mod Settings" button if it exists
+        const switchSelector = '[data-a-target="switch-chat-settings-mode"]';
+        const buttonTextSelector = 'div[data-a-target="tw-core-button-label-text"]';
+
+        // We use page.evaluate here to check the condition of the button's text content dynamically
+        const isNonModSettingsAvailable = await page.evaluate((selector, textSelector) => {
+          const button = document.querySelector(selector);
+          if (button) {
+            const textDiv = button.querySelector(textSelector);
+            // Check if the button's text is exactly "Switch to Non-Mod Settings"
+            if (textDiv && textDiv.textContent === "Switch to Non-Mod Settings") {
+              return true; // The button is available and has the correct text
+            }
+          }
+          return false; // The button is not available or does not have the correct text
+        }, switchSelector, buttonTextSelector);
+
+        // If the "Switch to Non-Mod Settings" button is available and has the correct text, click it
+        if (isNonModSettingsAvailable) {
+          await page.click(switchSelector);
+          // Wait for any potential dynamic changes after clicking
+        }
+
+        // Continue with enabling dark mode
         // Wait for the dark mode toggle and click it
         await page.waitForSelector('[data-a-target="darkmode-checkbox"]', { timeout: 5000 });
         await page.click('[data-a-target="darkmode-checkbox"]');
@@ -288,6 +309,7 @@ wss.on('connection', function connection(ws) {
         console.error(`Failed to enable dark mode on Twitch page: ${error}`);
       }
     };
+
 
     // Iterate through all pages and enable dark mode on Twitch pages
     for (let data of pageData) {
@@ -322,5 +344,53 @@ wss.on('connection', function connection(ws) {
         console.error('Error fetching page data:', e);
       }
     }, 100);
+
+    // Send a message to Twitch Chat
+    ws.on('message', function message(data) {
+      console.log('received: %s', data);
+
+      (async () => {
+        for (let i = 0; i < pageData.length; i++) {
+          try {
+            if (pageData[i].platform === 1) { // Assuming 1 represents Twitch
+              // Selector for the contenteditable element based on the given attributes
+              const editableSelector = 'div[data-a-target="chat-input"][contenteditable="true"]';
+
+              // Correctly reference the Puppeteer page object here
+              const page = pageData[i].page;
+
+              // Wait for the contenteditable element to be rendered
+              await page.waitForSelector(editableSelector);
+
+              // Click the contenteditable element to ensure it is focused
+              await page.click(editableSelector);
+
+              const messageText = data.toString(); // Convert to string explicitly
+              console.log(`Typing message: ${messageText}`, `Type of message: ${typeof messageText}`);
+
+              await page.keyboard.type(messageText);
+              await page.keyboard.press('Enter');
+
+              // const sendButtonSelector = 'button[data-a-target="chat-send-button"]';
+
+              // // Wait for the send button to be rendered
+              // await page.waitForSelector(sendButtonSelector);
+
+              // // Click the send button
+              // await page.click(sendButtonSelector);
+
+              console.log(`Successfully sent chat message: ${messageText}`);
+            }
+          } catch (error) {
+            console.error(`Failed to send chat message: ${error}`);
+          }
+        }
+      })();
+    });
+
+
+
+
+
   })();
 });

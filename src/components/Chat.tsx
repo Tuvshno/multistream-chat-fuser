@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import useChatLiveModeScrolling from '../hooks/useChatLiveModeScrolling'
 import { MessageModel } from '../utils/models'
 import ChatMessage from './ChatMessage'
@@ -9,6 +9,9 @@ import { GiNetworkBars } from "react-icons/gi";
 import { MdError } from "react-icons/md";
 
 const Chat = () => {
+
+  const webSocketRef = useRef<WebSocket | null>(null);
+
   const [messages, setMessages] = useState<MessageModel[]>([]);
   const [fontSize, setFontSize] = useState<number>(14);
 
@@ -26,9 +29,6 @@ const Chat = () => {
   const [currentLink, setCurrentLink] = useState<number>(0);
 
   const MAX_MESSAGES = 1000;
-  const send = () => {
-    console.log('sending message');
-  }
 
   const { chatMessagesBoxRef, isLiveModeEnabled, scrollNewMessages } =
     useChatLiveModeScrolling<HTMLDivElement>(messages)
@@ -55,14 +55,12 @@ const Chat = () => {
 
   useEffect(() => {
 
-    let webSocket: WebSocket;
-
-
     const connectWebSocket = () => {
-      console.log('Starting Socket Connection...');
-      webSocket = new WebSocket('ws://localhost:8080');
 
-      webSocket.onopen = () => {
+      console.log('Starting Socket Connection...');
+      webSocketRef.current = new WebSocket('ws://localhost:8080');
+
+      webSocketRef.current.onopen = () => {
         console.log("WebSocket is now open.");
         setReconnectAttempts(0); // Reset reconnection attempts on successful connection
       };
@@ -74,7 +72,7 @@ const Chat = () => {
       //   setMessages((prevChat) => [...prevChat, ...newMessages]);
       // };
 
-      webSocket.onmessage = (event) => {
+      webSocketRef.current.onmessage = (event) => {
         console.log("Message from server:", event.data);
         const message = JSON.parse(event.data); // Corrected from `JSON.parse(event)`
 
@@ -105,12 +103,12 @@ const Chat = () => {
             console.error('Unknown message type:', message.type);
         }
       };
-      webSocket.onerror = (event) => {
+      webSocketRef.current.onerror = (event) => {
         console.error("WebSocket error observed:", event);
         setSocketError(true);
       };
 
-      webSocket.onclose = () => {
+      webSocketRef.current.onclose = () => {
         console.log("WebSocket is closed now.");
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
           setTimeout(() => {
@@ -127,11 +125,20 @@ const Chat = () => {
     connectWebSocket(); // Initial connection attempt
 
     return () => {
-      webSocket.close();
+      webSocketRef.current?.close();
     };
   }, [reconnectAttempts]); // Depend on `reconnectAttempts` to trigger reconnection attempts
 
-
+  const send = (message: string) => {
+    // Check if the WebSocket is connected
+    if (webSocketRef.current && webSocketRef.current.readyState === WebSocket.OPEN) {
+      // Convert the message to a string format if it's not already (e.g., JSON)
+      const messageToSend = message
+      webSocketRef.current.send(messageToSend);
+    } else {
+      console.log('WebSocket is not open. Cannot send message.');
+    }
+  };
 
   const handleConnectedHover = (show: boolean | ((prevState: boolean) => boolean)) => {
     setShowConnectedTooltip(show);
