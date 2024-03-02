@@ -1,5 +1,5 @@
 ![chat-Banner](https://github.com/Tuvshno/multistream-chat-fuser/assets/61599265/e585cff8-bf81-4044-a6ab-9b99f30f4483)
-Multistream Chat Fuser is a free-to-use application designed to merge multiple chat streams from various platforms into a single, cohesive interface. This tool is perfect for content creators and viewers who engage with audiences across different streaming services. Experience interaction with your entire viewer base, all in one place.
+Multistream Chat Fuser is a free-to-use application designed to merge multiple chat streams from various platforms into a single, cohesive interface.
 
 ## Why Multistream Chat Fuser?
 Multistream Chat Fuser addresses the absence of a non-paid, multi-platform chat consolidation service. Whether you're a creator looking to streamline interactions or a viewer eager to participate in multiple chats simultaneously, this application offers a convenient, cost-free solution.
