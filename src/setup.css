@@ -11,74 +11,86 @@ body {
   display: flex;
   flex-direction: column;
   padding: 2rem;
-  background-color: #242429;
+  background-color: #322A2D;
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   align-content: center;
   align-items: center;
+  font-size: 12px;
+  color: #CBBEC2;
+  font-family: Consolas, 'Courier New', Cascadia Mono, monospace;
+  overflow-x: hidden;
+}
+
+.setup-main {
+  width: 85%;
+  height: 95%;
+}
+
+.setup-main-top {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #997582 ;
+  padding-bottom: 3px;
+}
+
+.setup-main-settings {
+  display: flex;
+  margin-top: 10px;
+}
+
+.setup-nav-bar {
+  display: flex;
+  flex-direction: column;
+  width: 20%;
+  border-right: 1px solid #997582;
+}
+
+.setup-nav-bar button {
+  background-color: transparent;
+  color: #CBBEC2;
+  text-align: left;
+  transition: color 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+  padding-top: 0px;
+  padding-bottom: 0px;
+
+}
+
+.setup-nav-bar button:hover {
+  color: #70666A;
+}
+
+.setup-details {
+  margin-left: 12px;
+  width: 80%;
+  overflow-y: auto; 
+}
+.setup-setting {
+  padding-top: 5px;
+  padding-left: 15px;
+  padding-bottom: 10px;
+  padding-right: 15px
+}
+
+.setup-setting:hover {
+background-color: #463139;
+}
+
+.setup-setting-description {
+  margin-bottom: 5px;
+}
+
+.setup-setting-title {
+  font-weight:bolder;
+  color: #E085A5;
 }
 
 .setup-header {
   color: #FFFFFF; /* Pure white for the header for emphasis */
   margin-bottom: 2rem; /* More space above the first input field */
 }
-.url-input-container {
-  width: 90%;
-  display: flex;
-}
-.setup-url-input {
-  width: 100%;
-}
-.remove-url-button {
-  justify-self: center;
-  align-self: center;
-  margin-top: 10px;
-  margin-left: 10px;
-  color: rgb(255, 160, 160);
-  cursor: pointer;
-}
-.remove-url-button:hover {
-color: rgb(255, 83, 83);
-}
-.setup-url-input, .setup-button {
-  padding: 0.75rem;
-  margin-top: 1rem;
-  background-color: #37373D; /* Darker shade for input and button backgrounds */
-  border: 1px solid #52525B; /* Slight border to define edges */
-  border-radius: 8px;
-  color: #E4E4E7; /* Light text color for contrast */
-  font-size: 1rem;
-}
 
-.setup-url-input:focus {
-  outline: none;
-  border-color: #8B5CF6; /* Highlight color for focused input */
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5); /* Soft glow effect */
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
 
-.setup-button {
-  cursor: pointer; /* Indicate that the buttons are clickable */
-  transition: background-color 0.2s ease-in-out;
-  width: 50%;
-}
-
-.setup-button:hover {
-  background-color: #4C4C52; /* Slightly lighter shade on hover for buttons */
-}
-
-/* Optional: Add a little margin at the bottom of the last button */
-.setup-button:last-child {
-  margin-bottom: 1rem;
-}
-
-.save {
-  background-color: #735cf6;
-}
-
-.save:hover {
-  background-color: #674dff;
-}
 
 .font-size-button {
   background-color: transparent;
@@ -157,15 +169,96 @@ color: rgb(255, 83, 83);
 
 
 .return {
-  color: white;
   position: absolute;
   top: 10px;
-  left: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
   transition: background-color 0.2s ease-in-out;
   cursor:pointer;
 }
 
 .return:hover {
-  color: #9f8eff;
+  color: #E085A5;
 
+}
+
+.save {
+  background-color: #735cf6;
+}
+
+.save:hover {
+  background-color: #674dff;
+}
+
+.setup-button {
+  cursor: pointer; /* Indicate that the buttons are clickable */
+  transition: background-color 0.2s ease-in-out;
+  width: 50%;
+}
+
+.setup-button:hover {
+  background-color: #4C4C52; /* Slightly lighter shade on hover for buttons */
+}
+
+/* Optional: Add a little margin at the bottom of the last button */
+.setup-button:last-child {
+  margin-bottom: 1rem;
+}
+
+.setting-tooltip {
+  cursor: pointer;
+  color: #E085A5;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.styled-checkbox {
+  display: none;
+}
+
+/* Create a custom checkbox */
+.styled-checkbox + label {
+  position: relative;
+  padding-left: 25px; /* Space for the custom checkbox */
+  cursor: pointer;
+}
+
+/* The custom checkbox */
+.styled-checkbox + label:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 15px;
+  height: 15px;
+  background-color: #413036; /* Background color */
+  border-radius: 3px; /* Optional: for rounded corners */
+}
+
+/* When the checkbox is checked, change the background color */
+.styled-checkbox:checked + label:before {
+  background-color: #674dff; /* New Background color */
+}
+
+/* Adjusting the custom checkmark for a 15x15 box */
+.styled-checkbox:checked + label:after {
+  content: '';
+  position: absolute;
+  left: 5px; /* Adjusted for smaller box size */
+  top: 2px; /* Adjusted for alignment */
+  width: 5px; /* Smaller width */
+  height: 9px; /* Smaller height */
+  border: solid white; /* Checkmark color - changed to white for contrast */
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.tooltip-warning {
+  display: flex;
+  color: #e08585;
+  align-items: center;
+  margin-top: 5px;
 }

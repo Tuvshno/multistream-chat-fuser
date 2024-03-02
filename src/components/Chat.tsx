@@ -15,6 +15,9 @@ const Chat = () => {
   const [messages, setMessages] = useState<MessageModel[]>([]);
   const [fontSize, setFontSize] = useState<number>(14);
 
+  const [enablePlatformIcons, setEnablePlatformIcons] = useState(true);
+  const [enableBadges, setEnableBadges] = useState(true);
+
   const [connected, setConnected] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -34,15 +37,37 @@ const Chat = () => {
     useChatLiveModeScrolling<HTMLDivElement>(messages)
 
   useEffect(() => {
-    window.electronAPI.setWindowSize(500, 900);
+    window.electronAPI.getChatWindowSize().then(({ width, height }) => {
+      console.log(width, height)
+      window.electronAPI.setWindowSize(width, height).then(() => {
+        window.electronAPI.center();
+
+      });
+    })
+
     console.log('starting server...');
     window.electronAPI.startServer();
+
+    //Get User Settings
     window.electronAPI.getFontSize().then((fs) => {
+      console.log(`Chat Font Size is ${fs}`)
       setFontSize(fs);
     });
 
+    window.electronAPI.getPlatformIconsEnabled().then((isEnabled) => {
+      console.log(`Chat Platfrom Icons are ${isEnabled}`)
+      setEnablePlatformIcons(isEnabled);
+    })
+
+    window.electronAPI.getBadgesEnabled().then((isEnabled) => {
+      console.log(`Chat Badges are ${isEnabled}`)
+      setEnableBadges(isEnabled);
+    })
+
+
     return () => {
       window.electronAPI.closeServer();
+      window.electronAPI.changeChatWindowSize();
     };
 
   }, []);
@@ -150,7 +175,13 @@ const Chat = () => {
 
   return (
     <div className="Chat">
-      <ChatMessagesBox ref={chatMessagesBoxRef} messages={messages} fontSize={fontSize} />
+      <ChatMessagesBox
+        ref={chatMessagesBoxRef}
+        messages={messages}
+        fontSize={fontSize}
+        enablePlatformIcons={enablePlatformIcons}
+        enableBadges={enableBadges}
+      />
       {!isLiveModeEnabled && (
         <ChatPausedAlert
           onClick={scrollNewMessages}
@@ -197,7 +228,8 @@ const Chat = () => {
 
       {socketError && (
         <div className='tooltip-disconnected'>
-          {`There has been a socket connection error.`}
+          <div>There has been a socket connection error. </div>
+           <div>Restart to fix.</div>
         </div>
       )}
 
@@ -207,10 +239,22 @@ const Chat = () => {
 
 const ChatMessagesBox = React.forwardRef<
   HTMLDivElement,
-  { messages: MessageModel[]; fontSize: number } // Include fontSize in the props
->(({ messages, fontSize }, ref) => {
+  {
+    messages: MessageModel[];
+    fontSize: number;
+    enablePlatformIcons: boolean;
+    enableBadges: boolean;
+  }
+>(({ messages, fontSize, enablePlatformIcons, enableBadges }, ref) => {
   const MessageList = messages.map((messageInfo) => (
-    <ChatMessage key={messageInfo.id} className="chat-message" messageInfo={messageInfo} style={{ fontSize: `${fontSize}px` }} />
+    <ChatMessage
+      key={messageInfo.id}
+      className="chat-message"
+      messageInfo={messageInfo}
+      enablePlatformIcons={enablePlatformIcons}
+      enableBadges={enableBadges}
+      style={{ fontSize: `${fontSize}px` }}
+    />
   ))
 
   return (

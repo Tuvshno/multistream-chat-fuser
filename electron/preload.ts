@@ -89,6 +89,10 @@ function useLoading() {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   setup: () => ipcRenderer.invoke('setup'),
+  getSetupWindowSize: () => ipcRenderer.invoke('getSetupWindowSize'),
+  getChatWindowSize: () => ipcRenderer.invoke('getChatWindowSize'),
+  changeSetupWindowSize: () => ipcRenderer.invoke('changeSetupWindowSize'),
+  changeChatWindowSize: () => ipcRenderer.invoke('changeChatWindowSize'),
   saveURLS: (urls: string[]) => ipcRenderer.invoke('saveURLS', urls),
   saveFontSize: (fontSize: number) => ipcRenderer.invoke('saveFontSize', fontSize),
   getUrls: () => ipcRenderer.invoke('getURLs'),
@@ -107,6 +111,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loginWithYouTube: () => ipcRenderer.invoke('loginWithYouTube'),
   closeServer: () => ipcRenderer.invoke('closeServer'),
   isTwitchLoggedIn: () => ipcRenderer.invoke('isTwitchLoggedIn'),
+  savePlatformIconsEnabled: (isEnabled: boolean) => ipcRenderer.invoke('savePlatformIconsEnabled', isEnabled),
+  saveBadgesEnabled: (isEnabled: boolean) => ipcRenderer.invoke('saveBadgesEnabled', isEnabled),
+  saveToolbarEnabled: (isEnabled: boolean) => ipcRenderer.invoke('saveToolbarEnabled', isEnabled),
+  getPlatformIconsEnabled: () => ipcRenderer.invoke('getPlatformIconsEnabled'),
+  getBadgesEnabled: () => ipcRenderer.invoke('getBadgesEnabled'),
+  getToolbarEnabled: () => ipcRenderer.invoke('getToolbarEnabled'),
+  center: () => ipcRenderer.invoke('center'),
+  openTutorial: () => ipcRenderer.invoke('openTutorial'),
 
 })
 

@@ -1,0 +1,130 @@
+
+
+.url-input-container {
+  width: 90%;
+  display: flex;
+  padding-left: 5px;
+  transition: border-left 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.url-input-container:hover {
+  background-color: #533641;
+  color: #EDEBFF;
+}
+
+.url-change-button .remove-url-button {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Make buttons fully opaque and interactable when the parent .url-change is hovered */
+.url-change:hover .remove-url-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.setup-url-input {
+  width: 100%;
+
+}
+.remove-url-button {
+  margin-left: 10px;
+  color: #E9D2C2;
+  cursor: pointer;
+}
+
+.remove-url-button:hover {
+color: rgb(255, 83, 83);
+}
+
+.edit:hover {
+color: #56e3ff
+}
+
+.url-change {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  width: 100%; /* Ensure full width */
+
+}
+
+.url-change-button {
+  display: flex; 
+  align-items: center; 
+}
+
+.setup-button {
+  padding: 0.75rem;
+  margin-top: 1rem;
+  background-color: #37373D; /* Darker shade for input and button backgrounds */
+  border: 1px solid #52525B; /* Slight border to define edges */
+  border-radius: 8px;
+  color: #E4E4E7; /* Light text color for contrast */
+  font-size: 1rem;
+}
+
+.setup-url-input:focus {
+  color: #24b5d9;
+
+  border: none;
+  outline: none;
+  background-color: #272022;
+
+  }
+
+.setup-add-button {
+  cursor: pointer; /* Indicate that the buttons are clickable */
+  background-color: #007F99;
+  color:#ffeeeb;
+  transition: background-color 0.2s ease-in-out;
+  margin-top: 5px;
+  border-radius: 2px;
+  padding: 3px;
+}
+
+.setup-add-button:hover {
+  background-color: #00AACC;
+}
+
+.setup-button:hover {
+  background-color: #4C4C52; /* Slightly lighter shade on hover for buttons */
+}
+
+/* Optional: Add a little margin at the bottom of the last button */
+.setup-button:last-child {
+  margin-bottom: 1rem;
+}
+
+.url-input-container.even {
+  background-color: #352D30; /* Default color for even */
+  
+}
+
+/* Odd indexed .url-input-container - assuming you want to keep it transparent by default */
+.url-input-container.odd {
+  background-color: transparent; /* Default color for odd */
+}
+
+.url-input-container.even:hover {
+  background-color: #533641;
+  color: #EDEBFF;
+}
+
+/* Odd indexed .url-input-container - assuming you want to keep it transparent by default */
+.url-input-container.odd:hover {
+  background-color: #533641;
+  color: #EDEBFF;
+}
+
+.url-change {
+  background-color: #272022;
+
+}
+
+.ready-to-go {
+  margin-top: 10px;
+  color: rgb(88, 179, 96)
+
+}

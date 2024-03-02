@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu, MenuItemConstructorOptions } from 'electron';
 import { initialize, enable } from '@electron/remote/main';
 import path from 'node:path';
 import Store from 'electron-store';
@@ -21,6 +21,41 @@ let child: ChildProcess | null;
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 const store = new Store();
 
+const menuTemplate: MenuItemConstructorOptions[] = [
+  {
+    label: 'File',
+    submenu: [
+      { role: 'quit' }
+    ]
+  },
+  {
+    label: 'Edit',
+    submenu: [
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+    ],
+  },
+  {
+    label: 'View',
+    submenu: [
+      { role: 'reload' },
+      { role: 'forceReload' },
+      { role: 'toggleDevTools' },
+      { type: 'separator' },
+      { role: 'resetZoom' },
+      { role: 'zoomIn' },
+      { role: 'zoomOut' },
+      { type: 'separator' },
+      { role: 'togglefullscreen' },
+    ],
+  },
+];
+
+
 function createSplashWindow() {
   splash = new BrowserWindow({
     width: 500,
@@ -40,6 +75,7 @@ function createWindow() {
     width: 1000,
     height: 900,
     show: false, // Initially hide the main window
+    backgroundColor: '#000000',
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       nodeIntegration: false,
@@ -56,10 +92,54 @@ function createWindow() {
     win?.webContents.send('main-process-message', (new Date).toLocaleString());
   });
 
+  // Resize event listener
+
+  win.on('resize', () => {
+    // Use a debounce function if you want to limit how often this runs
+    const [width, height] = win?.getSize() ?? [undefined, undefined];
+    console.log(`resizing ${width} ${height}`)
+
+    // You could use a condition here if you want to distinguish between different window states
+    const isSetupScreen = store.get('setup', true);
+    console.log('Is Setup Screen:', isSetupScreen);
+    if (isSetupScreen) {
+      store.set('setupWindowSize', { width, height });
+      console.log('changed chat size')
+    } else {
+      store.set('chatWindowSize', { width, height });
+    }
+  });
   //Handlers---------------------------------------------
   ipcMain.handle('setup', async () => {
     return store.get('setup', true);
   })
+
+  ipcMain.handle('getSetupWindowSize', () => {
+    const width = 1000;
+    const height = 900;
+
+    const size = store.get('setupWindowSize', { width, height });
+    return size;
+  });
+  ipcMain.handle('changeSetupWindowSize', () => {
+    const [width, height] = win?.getSize() ?? [undefined, undefined];
+    console.log(`Setup Window size will be : ${width} ${height}`)
+    store.set('setupWindowSize', { width, height });
+  });
+
+  ipcMain.handle('getChatWindowSize', () => {
+    const width = 500;
+    const height = 900;
+
+    const size = store.get('chatWindowSize', { width, height });
+    return size;
+  });
+
+  ipcMain.handle('changeChatWindowSize', () => {
+    const [width, height] = win?.getSize() ?? [undefined, undefined];
+    console.log(`Chat Window size will be : ${width} ${height}`)
+    store.set('chatWindowSize', { width, height });
+  });
 
   ipcMain.handle('setSetup', async (_event, boolSetup) => {
     console.log(boolSetup)
@@ -90,6 +170,63 @@ function createWindow() {
     win?.setSize(width, height);
   });
 
+  ipcMain.handle('saveBadgesEnabled', async (_event, isEnabled) => {
+    console.log(`isBadgesEnabled is ${isEnabled}`)
+    store.set('isBadgesEnabled', isEnabled);
+  });
+  ipcMain.handle('getBadgesEnabled', async () => {
+    const isEnabled = store.get('isBadgesEnabled', false);
+    console.log(`isBadgesEnabled is ${isEnabled}`)
+    return isEnabled;
+
+  });
+
+  ipcMain.handle('savePlatformIconsEnabled', async (_event, isEnabled) => {
+    console.log(`isPlatformIconsEnabled is ${isEnabled}`)
+    store.set('isPlatformIconsEnabled', isEnabled);
+  });
+  ipcMain.handle('getPlatformIconsEnabled', async () => {
+    const isEnabled = store.get('isPlatformIconsEnabled', false);
+    console.log(`isPlatformIconsEnabled is ${isEnabled}`)
+    return isEnabled;
+  });
+
+  ipcMain.handle('saveToolbarEnabled', async (_event, isEnabled) => {
+    console.log(`isToolbarEnabled is ${isEnabled}`)
+    store.set('isToolbarEnabled', isEnabled);
+    if (isEnabled) {
+      const menu = Menu.buildFromTemplate(menuTemplate);
+      Menu.setApplicationMenu(menu);
+    }
+    else
+      Menu.setApplicationMenu(null);
+  });
+  ipcMain.handle('getToolbarEnabled', async () => {
+    const isEnabled = store.get('isToolbarEnabled', false);
+    console.log(`isToolbarEnabled is ${isEnabled}`)
+    return isEnabled;
+  });
+
+  ipcMain.handle('openTutorial', async () => {
+    console.log('Opening Tutorial...')
+    createTutorialWindow();
+  })
+
+  function createTutorialWindow() {
+    const tutorialWindow = new BrowserWindow({
+      width: 850,
+      height: 650,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      }
+    });
+
+    tutorialWindow.loadFile('tutorial.html');
+    tutorialWindow.setMenu(null);
+    return tutorialWindow;
+  }
+
   ipcMain.handle('isTwitchLoggedIn', async () => {
     const cookiesTWPath = path.join(app.getPath('userData'), 'twitch-cookies.json');
 
@@ -97,6 +234,11 @@ function createWindow() {
 
     return isLoggedIn;
   });
+
+  ipcMain.handle('center', async () => {
+    win?.center();
+    console.log('Window centered');
+  })
 
   ipcMain.handle('startServer', async () => {
     console.log('server handling...')
@@ -304,13 +446,22 @@ function createWindow() {
   } else {
     win.loadFile(path.join(process.env.DIST, 'index.html'));
   }
-  // win.setMenu(null);
+
+  if (store.get('isToolbarEnabled', false)) {
+    const menu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(menu);
+  }
+  else
+    Menu.setApplicationMenu(null);
+
   win.once('ready-to-show', () => {
     splash?.close(); // Close the splash screen
     win?.show(); // Show the main window
   });
 
+
   win?.on('closed', () => {
+
     win = null;
   });
 }

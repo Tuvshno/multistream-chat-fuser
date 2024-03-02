@@ -1,0 +1,23 @@
+.connect-button {
+  padding: 0;
+  background-color: transparent;
+  color:  #54e2ff;
+
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.connect {
+  color:  #6bff54;
+}
+
+.setting-tip {
+color: #54e2ff;
+}

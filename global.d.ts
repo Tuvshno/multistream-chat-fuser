@@ -5,6 +5,10 @@ declare global {
   interface Window {
     electronAPI: {
       setup: () => Promise<boolean>;
+      getSetupWindowSize: () => Promise<{ width, height }>;
+      getChatWindowSize: () => Promise<{ width, height }>;
+      changeSetupWindowSize: () => Promise<>;
+      changeChatWindowSize: () => Promise<>;
       setSetup: (boolSetup: boolean) => Promise<void>;
       saveURLS: (urls: string[]) => Promise<void>;
       saveFontSize: (fontSize: number) => Promise<void>;
@@ -19,8 +23,15 @@ declare global {
       loginWithYouTube: () => Promise<void>;
       closeServer: () => Promise<void>;
       isTwitchLoggedIn: () => Promise<boolean>;
+      savePlatformIconsEnabled: (isEnabled: boolean) => Promise<void>;
+      saveBadgesEnabled: (isEnabled: boolean) => Promise<void>;
+      saveToolbarEnabled: (isEnabled: boolean) => Promise<void>;
+      getPlatformIconsEnabled: () => Promise<boolean>;
+      getBadgesEnabled: () => Promise<boolean>;
+      getToolbarEnabled: () => Promise<boolean>;
+      center: () => Promise<void>;
+      openTutorial: () => Promise<void>;
 
-      
       // ... any other methods you have
     };
   }

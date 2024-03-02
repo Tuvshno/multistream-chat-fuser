@@ -8,12 +8,16 @@ import './css/ChatMessage.css'
 type MessageProps = {
     messageInfo: MessageModel;
     style?: React.CSSProperties;
+    enablePlatformIcons?: boolean;
+    enableBadges?: boolean;
 } & React.ComponentPropsWithRef<'div'>
 
 const ChatMessage = ({
     messageInfo: { platform, messageType, authorName, message, imgSrcs, authorColor, replyingTo, subscriptionInfo },
     className,
     style,
+    enablePlatformIcons,
+    enableBadges
 }: MessageProps) => {
     const Badges = (imgSrcs ?? []).map((bg, i) => ( // Fallback to an empty array if imgSrcs is undefined
         <img
@@ -23,8 +27,6 @@ const ChatMessage = ({
             alt="Badge"
         />
     ));
-
-
     const Username = (
         <span className="message-username" style={{ color: authorColor }}>
             {authorName}
@@ -88,11 +90,14 @@ const ChatMessage = ({
                 {message &&
                     <div>
                         <div className="chat-message-info">
-                            {platform === 'YouTube' ?
-                                <img src={YouTubeBadge} alt="YouTube Badge" className='message-badge' /> :
-                                <img src={TwitchBadge} alt="Twitch Badge" className='message-badge' />
-                            }
-                            {Badges}
+                            {
+                                enablePlatformIcons && (
+                                    platform === 'YouTube' ?
+                                        <img src={YouTubeBadge} alt="YouTube Badge" className='message-badge' /> :
+                                        <img src={TwitchBadge} alt="Twitch Badge" className='message-badge' />
+
+                                )}
+                            {enableBadges && Badges}
                             {Username}
                         </div>
                         <span>:</span>
@@ -117,11 +122,11 @@ const ChatMessage = ({
                 )}
 
                 <div className="chat-message-info">
-                    {platform === 'YouTube' ?
+                    {enablePlatformIcons && (platform === 'YouTube' ?
                         <img src={YouTubeBadge} alt="YouTube Badge" className='message-badge' /> :
                         <img src={TwitchBadge} alt="Twitch Badge" className='message-badge' />
-                    }
-                    {Badges}
+                    )}
+                    {enableBadges && Badges}
                     {Username}
                 </div>
                 <span>:</span>
