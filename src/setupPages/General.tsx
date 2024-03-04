@@ -71,6 +71,7 @@ const General = () => {
   const getBorderColor = (url: string) => {
     if (url.includes("twitch")) return "#9146FF"; // Twitch purple
     if (url.includes("youtube")) return "#FF0000"; // YouTube red
+    if (url.includes("kick")) return "#55ff46"; // YouTube red
     return "transparent"; // Default case if neither
   };
 

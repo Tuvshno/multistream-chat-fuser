@@ -4,7 +4,8 @@ export interface MessageModel {
   id: string;
   authorName: string;
   message: string;
-  imgSrcs: string[];
+  imgSrcs?: string[];
+  badgeSvgs?: string[];
   authorColor: string;
   replyingTo?: string;
   subscriptionInfo? : string;

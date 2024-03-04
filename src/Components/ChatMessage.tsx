@@ -1,6 +1,8 @@
 import { MessageModel } from '../utils/models'
 import YouTubeBadge from '../assets/YT_Badge_18.png'
 import TwitchBadge from '../assets/Twitch_Badge_18.png'
+import KickBadge from '../assets/Kick_Icon.png'
+
 import { FaStar } from "react-icons/fa6";
 
 import './css/ChatMessage.css'
@@ -13,20 +15,19 @@ type MessageProps = {
 } & React.ComponentPropsWithRef<'div'>
 
 const ChatMessage = ({
-    messageInfo: { platform, messageType, authorName, message, imgSrcs, authorColor, replyingTo, subscriptionInfo },
+    messageInfo: { platform, messageType, authorName, message, imgSrcs, badgeSvgs, authorColor, replyingTo, subscriptionInfo },
     className,
     style,
     enablePlatformIcons,
     enableBadges
 }: MessageProps) => {
-    const Badges = (imgSrcs ?? []).map((bg, i) => ( // Fallback to an empty array if imgSrcs is undefined
-        <img
-            key={i}
-            src={bg}
-            className="message-badge"
-            alt="Badge"
-        />
-    ));
+    const Badges = (imgSrcs ?? []).concat(badgeSvgs ?? []).map((src, i) => {
+        if (typeof src === 'string' && src.startsWith('<svg')) { // Assuming badgeSvgs contain SVG markup
+            return <span key={i} className="message-badge" dangerouslySetInnerHTML={{ __html: src }}></span>;
+        } else {
+            return <img key={i} src={src} className="message-badge" alt="Badge" />;
+        }
+    });
     const Username = (
         <span className="message-username" style={{ color: authorColor }}>
             {authorName}
@@ -41,7 +42,8 @@ const ChatMessage = ({
             const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', 'svg'];
             const isTwitchCdnUrl = url.startsWith('https://static-cdn.jtvnw.net');
             const isYoutubeImageUrl = url.startsWith('https://yt3.ggpht.com/');
-            return isTwitchCdnUrl || isYoutubeImageUrl || imageExtensions.some(extension => url.toLowerCase().endsWith(extension));
+            const isKickImageUrl = url.startsWith('https://files.kick.com');
+            return isTwitchCdnUrl || isYoutubeImageUrl || isKickImageUrl || imageExtensions.some(extension => url.toLowerCase().endsWith(extension));
         };
 
         // Split message by URLs and keep the URLs in the output array
@@ -94,9 +96,12 @@ const ChatMessage = ({
                                 enablePlatformIcons && (
                                     platform === 'YouTube' ?
                                         <img src={YouTubeBadge} alt="YouTube Badge" className='message-badge' /> :
-                                        <img src={TwitchBadge} alt="Twitch Badge" className='message-badge' />
-
-                                )}
+                                        (platform === 'Twitch' ?
+                                            <img src={TwitchBadge} alt="Twitch Badge" className='message-badge' /> :
+                                            <img src={KickBadge} alt="Kick Badge" className='message-badge' />
+                                        )
+                                )
+                            }
                             {enableBadges && Badges}
                             {Username}
                         </div>
@@ -124,7 +129,10 @@ const ChatMessage = ({
                 <div className="chat-message-info">
                     {enablePlatformIcons && (platform === 'YouTube' ?
                         <img src={YouTubeBadge} alt="YouTube Badge" className='message-badge' /> :
-                        <img src={TwitchBadge} alt="Twitch Badge" className='message-badge' />
+                        (platform === 'Twitch' ?
+                            <img src={TwitchBadge} alt="Twitch Badge" className='message-badge' /> :
+                            <img src={KickBadge} alt="Kick Badge" className='message-badge' />
+                        )
                     )}
                     {enableBadges && Badges}
                     {Username}

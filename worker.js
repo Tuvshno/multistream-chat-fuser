@@ -49,7 +49,6 @@ async function getYouTubePageData(page) {
   });
   return chatData;
 }
-
 async function getTwitchPageData(page) {
   const chatData = await page.evaluate(() => {
     let allMessages = []; // Array to hold all messages including user notices and chat messages
@@ -138,7 +137,91 @@ async function getTwitchPageData(page) {
 
   return chatData;
 }
+async function getKickPageData(page) {
+  const chatData = await page.evaluate(() => {
+    let allMessages = []; // Array to hold all messages
 
+    // Function to process image nodes within the message
+    const processImage = (node) => {
+      if (node.querySelector('img')) {
+        return node.querySelector('img').src; // Return image source if present
+      }
+      return ''; // Return empty string if no image is found
+    };
+
+    const processSvgBadges = (node) => {
+      const svgs = node.querySelectorAll('svg');
+      return Array.from(svgs).map(svg => {
+        // Serialize the SVG element to a string
+        const serializer = new XMLSerializer();
+        return serializer.serializeToString(svg);
+      });
+    };
+
+    // Process the chat messages
+    const chatMessages = Array.from(document.querySelectorAll('.chat-entry:not(.processed)'));
+    chatMessages.forEach(item => {
+      let platform = 'Kick';
+      let messageType = 'Message';
+      let replyingTo = '';
+
+      // Extract the reply text if present
+      const replyElement = item.querySelector('.flex.text-xs.leading-3 span.truncate');
+      if (replyElement) {
+        replyingTo = replyElement.getAttribute('title');
+      }
+
+      const authorElement = item.querySelector('.chat-entry-username');
+      const authorName = authorElement?.textContent.trim() || 'Anonymous';
+      const authorColor = authorElement?.style.color || ''; // Get the color style
+
+      // Initialize messageParts array to hold both text and image sources
+      let messageParts = [];
+
+      // Process textual message content
+      const messageElement = item.querySelector('.chat-entry-content');
+      if (messageElement) {
+        messageParts.push(messageElement.textContent.trim());
+      }
+
+      // Process any emote images within the message
+      const emoteImages = item.querySelectorAll('.chat-emote-container img.chat-emote');
+      emoteImages.forEach(emote => {
+        const emoteSrc = processImage(emote.parentNode); // Assuming each emote is within its own container that can be directly passed to processImage
+        if (emoteSrc) {
+          messageParts.push(emoteSrc); // Add emote image source to message parts
+        }
+      });
+
+      const badgeSvgs = processSvgBadges(item.querySelector('.chat-message-identity'));
+
+      // Combine all message parts into a single string with spaces between elements
+      const combinedMessage = messageParts.join(' ');
+      console.log(combinedMessage)
+      const chatMessage = {
+        platform,
+        messageType,
+        authorName,
+        message: combinedMessage, // Combined text and image sources
+        badgeSvgs,
+        authorColor
+      };
+
+      // Include the reply in the chat message object if present
+      if (replyingTo) {
+        chatMessage.replyingTo = replyingTo;
+      }
+
+      item.style.display = 'none'; // Hide the item instead of removing it from the DOM
+      item.classList.add('processed'); // Mark as processed
+      allMessages.push(chatMessage);
+    });
+
+    return allMessages; // Return all messages
+  });
+
+  return chatData;
+}
 
 const wss = new websocket.WebSocketServer({ port: 8080 });
 //MEssage Socket has been created here
@@ -174,14 +257,18 @@ wss.on('connection', function connection(ws) {
         platform.push(0); // 0 for YouTube
       } else if (url.includes("twitch")) {
         platform.push(1); // 1 for Twitch
+      } else if (url.includes("kick")) {
+        platform.push(2); // 2 for Kick
       }
+
     });
     console.log('Received URLs:', USER_URLS);
     console.log('Platforms:', platform);
 
     const selectors = [
       '#items.style-scope.yt-live-chat-item-list-renderer', //YT Selector
-      '.chat-scrollable-area__message-container' //Twitch Selector
+      '.chat-scrollable-area__message-container', //Twitch Selector
+      '#chatroom' // Kick Selector
     ];
 
 
@@ -215,6 +302,7 @@ wss.on('connection', function connection(ws) {
       }
 
       await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36");
+      await page.setCacheEnabled(false);
 
       await page.goto(USER_URLS[i]).catch(e => console.error(`Error navigating to ${USER_URLS[i]}:`, e));
 
@@ -322,8 +410,10 @@ wss.on('connection', function connection(ws) {
         const chatDataPromises = pageData.map(data => {
           if (data.selector.includes('yt-live-chat-item-list-renderer')) {
             return getYouTubePageData(data.page);
-          } else {
+          } else if (data.selector.includes('chat-scrollable-area__message-container')) {
             return getTwitchPageData(data.page);
+          } else {
+            return getKickPageData(data.page);
           }
         });
 
