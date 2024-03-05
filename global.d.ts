@@ -31,6 +31,7 @@ declare global {
       getToolbarEnabled: () => Promise<boolean>;
       center: () => Promise<void>;
       openTutorial: () => Promise<void>;
+      getEmotesFromURL: (url: string) => Promise<void>;
 
       // ... any other methods you have
     };

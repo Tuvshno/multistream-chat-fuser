@@ -5,6 +5,7 @@ import General from './setupPages/General';
 import Appearence from './setupPages/Appearence';
 import Logins from './setupPages/Logins';
 import Version from './setupPages/Version';
+import Emotes from './setupPages/Emotes';
 
 type SetSetupFunction = (value: boolean) => void; // Example function type that takes a boolean and returns void
 
@@ -54,6 +55,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
                     <div className='setup-nav-bar'>
                         <button onClick={() => switchPage('General')}>General</button>
                         <button onClick={() => switchPage('Appearence')}>Appearence</button>
+                        <button onClick={() => switchPage('Emotes')}>Emotes</button>
                         <button onClick={() => switchPage('Logins')}>Logins</button>
                         <button onClick={() => switchPage('Version')}>Version</button>
 
@@ -62,6 +64,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
                     <div className='setup-details'>
                         {page === 'General' && <General />}
                         {page === 'Appearence' && <Appearence />}
+                        {page === 'Emotes' && <Emotes />}
                         {page === 'Logins' && <Logins />}
                         {page === 'Version' && <Version />}
 
@@ -70,6 +73,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ setSetup }) => {
 
             </div>
             <IoMdClose onClick={goToMain} className='return' />
+            <button onClick={goToMain} className='fuse' > Fuse Chats </button>
         </div >
     );
 };

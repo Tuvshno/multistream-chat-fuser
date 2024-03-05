@@ -1,0 +1,16 @@
+.setup-download-button {
+  cursor: pointer; /* Indicate that the buttons are clickable */
+  background-color: transparent;
+  color:#009914;
+  transition: color 0.2s ease-in-out;
+  margin-top: 5px;
+  border-radius: 2px;
+  padding: 3px;
+  width: 35px;
+  height: 35px;
+}
+
+.setup-download-button:hover {
+  background-color: transparent;
+  color:#00cf1c;
+}

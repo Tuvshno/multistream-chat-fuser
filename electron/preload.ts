@@ -119,6 +119,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getToolbarEnabled: () => ipcRenderer.invoke('getToolbarEnabled'),
   center: () => ipcRenderer.invoke('center'),
   openTutorial: () => ipcRenderer.invoke('openTutorial'),
+  getEmotesFromURL: (url: string) => ipcRenderer.invoke('getEmotesFromURL', url),
 
 })
 

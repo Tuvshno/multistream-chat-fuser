@@ -2,21 +2,24 @@ import { useEffect, useState } from "react";
 import { MdOutlineEdit } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
 import { FaInfoCircle } from "react-icons/fa";
+import { MdOutlineDownloadForOffline } from "react-icons/md";
 
 import '../components/css/GeneralPage.css';
+import '../components/css/Emotes.css';
 
-const General = () => {
+const Emotes = () => {
   const [urls, setUrls] = useState(['']);
 
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [isChanges, setIsChanges] = useState(false);
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    window.electronAPI.getUrls().then((fetchedUrls) => {
-      setUrls(fetchedUrls.length ? fetchedUrls : ['']);
-    });
-  }, []);
+  // Get previous emote Links
+  // useEffect(() => {
+  //   window.electronAPI.getUrls().then((fetchedUrls) => {
+  //     setUrls(fetchedUrls.length ? fetchedUrls : ['']);
+  //   });
+  // }, []);
 
   useEffect(() => {
     // Check if all URLs are non-empty strings
@@ -35,6 +38,10 @@ const General = () => {
         window.electronAPI.saveURLS(urls);
       }
     });
+  };
+
+  const downloadEmotes = () => {
+    window.electronAPI.getEmotesFromURL(urls[0]);
   };
 
   const handleUrlChange = (newValue: string) => {
@@ -69,33 +76,22 @@ const General = () => {
   };
 
   const getBorderColor = (url: string) => {
-    if (url.includes("twitch")) return "#9146FF"; // Twitch purple
-    if (url.includes("youtube")) return "#FF0000"; // YouTube red
-    if (url.includes("kick")) return "#55ff46"; // YouTube red
+    if (url.includes("7tv")) return "#2C95ED"; // Twitch purple
     return "transparent"; // Default case if neither
   };
 
-  const openTutorial = () => {
-    console.log('clicked tut')
-    window.electronAPI.openTutorial();
-  }
+  // const openTutorial = () => {
+  //   console.log('clicked tut')
+  //   window.electronAPI.openTutorial();
+  // }
 
   return (
     <div>
       <div className="setup-setting">
-        <h2 className="setup-setting-title">General</h2>
+        <h3 className="setup-setting-title">7TV Emote Linking</h3>
         <div className="setup-setting-description">
-          Multistream Chat Fuser utilies Chat Popouts from different stream platforms in order to create a unified streaming interface.
-          We do not connect to any external API and run entirely locally. Therefore as the user, you have complete control over the
-          chats that you want to connect together. But this comes with a cost! The more chats you link together, the more memory you
-          take up on your computer!
-        </div>
-      </div>
-      <div className="setup-setting">
-        <h3 className="setup-setting-title">Chat Linking</h3>
-        <div className="setup-setting-description">
-          Controls which chats to use. We currently support Twitch and YouTube.
-          <span className="setting-tooltip underline" onClick={openTutorial}>Tutorial</span>
+          Controls which 7TV Account Emotes you want in your chat.
+          {/* <span className="setting-tooltip underline" onClick={openTutorial}>Tutorial</span> */}
         </div>
 
         {urls.map((url, index) => (
@@ -135,19 +131,29 @@ const General = () => {
             )}
           </div>
         ))}
-        <button onClick={addNewUrlField} className="setup-add-button">Add Chat URL</button>
+        <button onClick={addNewUrlField} className="setup-add-button">Add 7TV Url</button>
+        <MdOutlineDownloadForOffline onClick={downloadEmotes} className="setup-download-button" style={{ marginLeft: '10px' }} />
         {isChanges &&
           <div className="tooltip-warning">
             <FaInfoCircle style={{ marginRight: '10px' }} />
             <span>You must restart to apply any link changes.</span>
           </div>
         }
-        {!isChanges && ready && <div className="ready-to-go">Chats Linked!</div>}
+        {!isChanges && ready && <div className="ready-to-go">Emotes Linked!</div>}
+      </div>
+
+      <div className="setup-setting">
+        <h3 className="setup-setting-title">Emotes</h3>
+        <div className="setup-setting-description">
+          All the emotes you currently have.
+        </div>
+
 
       </div>
+
 
     </div>
   );
 };
 
-export default General;
+export default Emotes;

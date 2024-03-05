@@ -17,6 +17,7 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.D
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
 let child: ChildProcess | null;
+console.log(app.getPath('userData'))
 
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 const store = new Store();
@@ -114,6 +115,7 @@ function createWindow() {
     return store.get('setup', true);
   })
 
+
   ipcMain.handle('getSetupWindowSize', () => {
     const width = 1000;
     const height = 900;
@@ -121,6 +123,7 @@ function createWindow() {
     const size = store.get('setupWindowSize', { width, height });
     return size;
   });
+
   ipcMain.handle('changeSetupWindowSize', () => {
     const [width, height] = win?.getSize() ?? [undefined, undefined];
     console.log(`Setup Window size will be : ${width} ${height}`)
@@ -238,6 +241,55 @@ function createWindow() {
   ipcMain.handle('center', async () => {
     win?.center();
     console.log('Window centered');
+  })
+
+  ipcMain.handle('getEmotesFromURL', async (_event, url) => {
+    console.log(`server handling... from ${url}`);
+
+    const appdataPath = app.getPath('userData')
+
+    const workerPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'emotes.js') // Path when packaged
+      : path.join('./emotes.js');
+
+    if (app.isPackaged) {
+      // In production, set NODE_PATH to 'app.asar.unpacked/node_modules'
+      const nodeModulesPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules');
+      child = spawn('node', [workerPath, appdataPath, url], {
+        stdio: 'pipe', // Use 'pipe' to handle stdio streams manually
+        windowsHide: false, // Hide the terminal window on Windows
+        env: {
+          ...process.env, // Inherit the parent's environment variables
+          NODE_PATH: nodeModulesPath, // Override NODE_PATH
+          ELECTRON_RUN_AS_NODE: '1'
+
+        }
+      });
+
+    }
+    else {
+      child = spawn('node', [workerPath, appdataPath, url], {
+        stdio: 'pipe', // Use 'pipe' to handle stdio streams manually
+        windowsHide: false // Hide the terminal window on Windows
+      });
+    }
+
+    child.stdout?.on('data', (data) => {
+      console.log(`stdout: ${data}`);
+      log.info(`Child stdout:\n${data}`);
+    });
+
+    child.stderr?.on('data', (data) => {
+      console.error(`Child stderr:\n${data}`);
+      log.info(`Child stderr:\n${data}`);
+
+    });
+
+    child.on('exit', (code, signal) => {
+      console.log(`Child exited with code ${code} and signal ${signal}`);
+      log.info(`Child exited with code ${code} and signal ${signal}`);
+
+    });
   })
 
   ipcMain.handle('startServer', async () => {
