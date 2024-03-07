@@ -11,9 +11,11 @@ declare global {
       changeChatWindowSize: () => Promise<>;
       setSetup: (boolSetup: boolean) => Promise<void>;
       saveURLS: (urls: string[]) => Promise<void>;
+      saveEmoteURLS: (urls: string[]) => Promise<void>;
       saveFontSize: (fontSize: number) => Promise<void>;
       getFontSize: () => Promise<number>;
       getUrls: () => Promise<string[]>;
+      getEmoteUrls: () => Promise<string[]>;
       setWindowSize: (width: number, height: number) => Promise<void>;
       startServer: () => Promise<void>;
       openSettingsWindow: () => Promise<void>;

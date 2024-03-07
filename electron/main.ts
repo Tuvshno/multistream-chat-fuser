@@ -155,6 +155,11 @@ function createWindow() {
     store.set('urls', urls);
   });
 
+  ipcMain.handle('saveEmoteURLS', async (_event, urls) => {
+    console.log(urls)
+    store.set('emoteurls', urls);
+  });
+
   ipcMain.handle('saveFontSize', async (_event, fontSize) => {
     console.log(fontSize);
     store.set('fontSize', fontSize);
@@ -167,6 +172,9 @@ function createWindow() {
 
   ipcMain.handle('getURLs', async () => {
     return store.get('urls', []); // Assuming 'urls' is the key in electron-store
+  });
+  ipcMain.handle('getEmoteURLs', async () => {
+    return store.get('emoteurls', []); // Assuming 'urls' is the key in electron-store
   });
 
   ipcMain.handle('setWindowSize', async (_event, width, height) => {
@@ -290,6 +298,7 @@ function createWindow() {
       log.info(`Child exited with code ${code} and signal ${signal}`);
 
     });
+    
   })
 
   ipcMain.handle('startServer', async () => {

@@ -14,18 +14,23 @@ const Emotes = () => {
   const [isChanges, setIsChanges] = useState(false);
   const [ready, setReady] = useState(false);
 
+  // const [progressMessage, setProgressMessage] = useState('');
+  // const [errorMessage, setErrorMessage] = useState('');
+
   // Get previous emote Links
-  // useEffect(() => {
-  //   window.electronAPI.getUrls().then((fetchedUrls) => {
-  //     setUrls(fetchedUrls.length ? fetchedUrls : ['']);
-  //   });
-  // }, []);
+  useEffect(() => {
+    window.electronAPI.getEmoteUrls().then((fetchedUrls) => {
+      console.log(fetchedUrls)
+      setUrls(fetchedUrls.length ? fetchedUrls : ['']);
+    });
+  }, []);
 
   useEffect(() => {
     // Check if all URLs are non-empty strings
     const allUrlsValid = urls.every(url => url.trim() !== '');
     setReady(allUrlsValid);
   }, [urls]);
+
 
   // Function to check and save URL changes
   const urlChanges = () => {
@@ -35,7 +40,7 @@ const Emotes = () => {
       if (hasChanged) {
         setIsChanges(true);
         // Save the new URLs
-        window.electronAPI.saveURLS(urls);
+        window.electronAPI.saveEmoteURLS(urls);
       }
     });
   };
@@ -147,7 +152,6 @@ const Emotes = () => {
         <div className="setup-setting-description">
           All the emotes you currently have.
         </div>
-
 
       </div>
 
