@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import useChatLiveModeScrolling from '../hooks/useChatLiveModeScrolling'
-import { MessageModel } from '../utils/models'
+import { MessageModel, Emote } from '../utils/models'
 import ChatMessage from './ChatMessage'
 import ChatPausedAlert from './ChatPausedAlert'
 import SendMessageForm from './SendMessageForm'
@@ -30,6 +30,9 @@ const Chat = () => {
   const [socketError, setSocketError] = useState<boolean>(false);
 
   const [currentLink, setCurrentLink] = useState<number>(0);
+
+  const [emotes, setEmotes] = useState<Emote[]>([]);
+
 
   const MAX_MESSAGES = 1000;
 
@@ -63,6 +66,12 @@ const Chat = () => {
       console.log(`Chat Badges are ${isEnabled}`)
       setEnableBadges(isEnabled);
     })
+
+    // Get Emotes
+    window.electronAPI.getEmoteFiles().then((fetchedEmotes: Emote[]) => {
+      console.log('Fetched Emotes:', fetchedEmotes);
+      setEmotes(fetchedEmotes);
+    });
 
 
     return () => {
@@ -181,6 +190,7 @@ const Chat = () => {
         fontSize={fontSize}
         enablePlatformIcons={enablePlatformIcons}
         enableBadges={enableBadges}
+        emotes={emotes}
       />
       {!isLiveModeEnabled && (
         <ChatPausedAlert
@@ -229,7 +239,7 @@ const Chat = () => {
       {socketError && (
         <div className='tooltip-disconnected'>
           <div>There has been a socket connection error. </div>
-           <div>Restart to fix.</div>
+          <div>Restart to fix.</div>
         </div>
       )}
 
@@ -244,8 +254,9 @@ const ChatMessagesBox = React.forwardRef<
     fontSize: number;
     enablePlatformIcons: boolean;
     enableBadges: boolean;
+    emotes: Emote[];
   }
->(({ messages, fontSize, enablePlatformIcons, enableBadges }, ref) => {
+>(({ messages, fontSize, enablePlatformIcons, enableBadges, emotes }, ref) => {
   const MessageList = messages.map((messageInfo) => (
     <ChatMessage
       key={messageInfo.id}
@@ -254,6 +265,7 @@ const ChatMessagesBox = React.forwardRef<
       enablePlatformIcons={enablePlatformIcons}
       enableBadges={enableBadges}
       style={{ fontSize: `${fontSize}px` }}
+      emotes={emotes}
     />
   ))
 

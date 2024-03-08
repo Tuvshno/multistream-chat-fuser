@@ -1,6 +1,12 @@
 // In a global.d.ts file
 export { };
 
+interface Emote {
+  data: string; // Base64 encoded image data
+  name: string; // File name without the .webp extension
+}
+
+
 declare global {
   interface Window {
     electronAPI: {
@@ -15,7 +21,11 @@ declare global {
       saveFontSize: (fontSize: number) => Promise<void>;
       getFontSize: () => Promise<number>;
       getUrls: () => Promise<string[]>;
+      checkEmotesReady: () => Promise<boolean>;
+      setEmotesReady: (isReady: boolean) => Promise<void>,
       getEmoteUrls: () => Promise<string[]>;
+      getEmoteFiles: () => Promise<Emote[]>;
+      getEmotesJSON: () => Promise<Emote[]>;
       setWindowSize: (width: number, height: number) => Promise<void>;
       startServer: () => Promise<void>;
       openSettingsWindow: () => Promise<void>;
@@ -34,7 +44,7 @@ declare global {
       center: () => Promise<void>;
       openTutorial: () => Promise<void>;
       getEmotesFromURL: (url: string) => Promise<void>;
-
+      onEmoteDownloadUpdate: (callback: (value: boolean) => void) => void;
       // ... any other methods you have
     };
   }

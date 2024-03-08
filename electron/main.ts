@@ -7,7 +7,12 @@ import log from 'electron-log/main';
 import { ChildProcess } from 'child_process';
 import { autoUpdater } from "electron-updater";
 import fs from 'fs';
+import util from 'util'
 
+// Convert fs.readdir and fs.readFile into Promise-based functions
+const readdirAsync = util.promisify(fs.readdir);
+const readFileAsync = util.promisify(fs.readFile);
+const mkdirAsync = util.promisify(fs.mkdir);
 // import { ChildProcess, fork } from 'child_process';
 
 // The built directory structure
@@ -16,6 +21,8 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.D
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
+let downloadWindow: BrowserWindow | null;
+
 let child: ChildProcess | null;
 console.log(app.getPath('userData'))
 
@@ -254,6 +261,33 @@ function createWindow() {
   ipcMain.handle('getEmotesFromURL', async (_event, url) => {
     console.log(`server handling... from ${url}`);
 
+    // Create the downloading screen window if it doesn't exist
+    if (!downloadWindow) {
+      downloadWindow = new BrowserWindow({
+        width: 600,
+        height: 300,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false, // Set to false for simplicity; consider security implications
+        }
+      });
+
+      downloadWindow.loadFile('downloading.html');
+      downloadWindow.setMenu(null);
+      downloadWindow.on('closed', () => {
+        downloadWindow = null;
+      });
+
+      downloadWindow.on('closed', () => {
+        downloadWindow = null;
+        if (child && !child.killed) {
+          child.kill(); // Terminate the child process when the window is closed
+          console.log('Download process was terminated.');
+        }
+      });
+
+    }
+
     const appdataPath = app.getPath('userData')
 
     const workerPath = app.isPackaged
@@ -283,22 +317,43 @@ function createWindow() {
     }
 
     child.stdout?.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-      log.info(`Child stdout:\n${data}`);
+      if (downloadWindow) {
+        console.log(data)
+        downloadWindow.webContents.send('update-download-status', `${data.toString()}`);
+      }
     });
 
     child.stderr?.on('data', (data) => {
-      console.error(`Child stderr:\n${data}`);
-      log.info(`Child stderr:\n${data}`);
-
+      if (downloadWindow) {
+        console.log(data)
+        downloadWindow.webContents.send('update-download-status', `${data.toString()}`);
+      }
     });
 
     child.on('exit', (code, signal) => {
-      console.log(`Child exited with code ${code} and signal ${signal}`);
-      log.info(`Child exited with code ${code} and signal ${signal}`);
+      if (downloadWindow) {
+        let message = `Download complete with code ${code}.`;
+        if (signal) message += ` Terminated with signal ${signal}.`;
+        downloadWindow.webContents.send('update-download-status', message);
 
+        // Send Emotes are ready
+        if (code === 0) {
+          win?.webContents.send('emotes-ready', true);
+          store.set('emotes-ready', true);
+        }
+
+      }
     });
-    
+  })
+
+  ipcMain.handle('checkEmotesReady', async () => {
+    const isReady = store.get('emotes-ready', false);
+    console.log(isReady)
+    return isReady
+  })
+
+  ipcMain.handle('setEmotesReady', async (isReady) => {
+    store.set('emotes-ready', isReady);
   })
 
   ipcMain.handle('startServer', async () => {
@@ -391,6 +446,73 @@ function createWindow() {
 
     // child.send({ type: 'newMessage', content: 'Hello from parent' });
   })
+
+  ipcMain.handle('getEmoteFiles', async () => {
+    const appDataPath = app.getPath('userData');
+    const emotesFolderPath = path.join(appDataPath, 'downloaded_emotes');
+
+    // Check if the folder exists, create it if it doesn't
+    if (!fs.existsSync(emotesFolderPath)) {
+        await mkdirAsync(emotesFolderPath, { recursive: true });
+        return []; // Since the folder was just created, it's empty, return an empty array
+    }
+
+    try {
+        const files = await readdirAsync(emotesFolderPath);
+        // If the folder is empty, return an empty array
+        if (files.length === 0) {
+            return [];
+        }
+        
+        // Filter out 'emotes.json' before mapping over files
+        const filteredFiles = files.filter(fileName => fileName !== 'emotes.json');
+        
+        const filePromises = filteredFiles.map(async (fileName) => {
+            const filePath = path.join(emotesFolderPath, fileName);
+            const fileBuffer = await readFileAsync(filePath);
+            const base64 = fileBuffer.toString('base64');
+            const fileNameWithoutExtension = path.basename(fileName, '.webp');
+            return {
+                data: `data:image/webp;base64,${base64}`,
+                name: fileNameWithoutExtension // Name without the .webp extension
+            };
+        });
+
+        const fileData = await Promise.all(filePromises);
+        return fileData; // No need to filter here since all entries will be defined
+    } catch (error) {
+        console.error('Failed to get emote files:', error);
+        throw error;
+    }
+});
+
+
+
+
+ipcMain.handle('getEmotesJSON', async () => {
+  const appDataPath = app.getPath('userData');
+  const emotesFolderPath = path.join(appDataPath, 'downloaded_emotes');
+  const emotesFilePath = path.join(emotesFolderPath, 'emotes.json');
+
+  try {
+      const emotesFileContent = await readFileAsync(emotesFilePath, { encoding: 'utf8' });
+      const emotesData = JSON.parse(emotesFileContent);
+      
+      // Optionally, if you want to adjust the file paths to be web accessible or relative:
+      // const adjustedEmotesData = emotesData.map((emote: { src: string; }) => ({
+      //   ...emote,
+      //   src: emote.src.replace(/\\/g, '/').replace(/C:\/Users\/tuvshno\/AppData\/Roaming\/multistream-chat\/downloaded_emotes\//, '')
+      // }));
+
+      // return adjustedEmotesData;
+
+      return emotesData; // Return the parsed JSON data
+  } catch (error) {
+      console.error('Failed to read emotes.json:', error);
+      throw error; // This will send an error back to the renderer process
+  }
+});
+
 
   ipcMain.handle('open-settings-window', async () => {
     console.log('setup updated');

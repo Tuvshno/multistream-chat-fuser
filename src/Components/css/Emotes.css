@@ -1,16 +1,45 @@
-.setup-download-button {
-  cursor: pointer; /* Indicate that the buttons are clickable */
-  background-color: transparent;
-  color:#009914;
-  transition: color 0.2s ease-in-out;
-  margin-top: 5px;
-  border-radius: 2px;
-  padding: 3px;
-  width: 35px;
-  height: 35px;
+.setup-add-button {
+  display: flex;
 }
 
-.setup-download-button:hover {
+.setup-download-button {
   background-color: transparent;
-  color:#00cf1c;
+  width: 15px;
+  height: 15px;
+  justify-content: center;
+  align-self: center;
+  margin-left: 0;
+}
+.emotes-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 10px;
+  max-height: 400px; /* Adjust based on your preference */
+  overflow-y: auto; /* Enables vertical scrolling */
+}
+
+.emote-item {
+  text-align: center;
+  width: 100px; /* Ensure consistent width */
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+}
+
+.emote-image {
+  width: 100%; /* Makes the image responsive within the container */
+  height: 100%; /* Maintains aspect ratio */
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.emote-title {
+  margin-top: 5px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Ensures text is cut off with ellipses */
+  width: 100%; /* Ensures the title does not exceed the item width */
 }

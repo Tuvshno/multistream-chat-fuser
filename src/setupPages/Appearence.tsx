@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import '../components/css/GeneralPage.css';
 import ChatMessage from '../components/ChatMessage';
+import { Emote } from "../utils/models";
 
 const Appearence = () => {
 
@@ -18,6 +19,8 @@ const Appearence = () => {
     "imgSrcs": ["https://static-cdn.jtvnw.net/badges/v1/4b76d5f2-91cc-4400-adf2-908a1e6cfd1e/1"],
     "authorColor": "rgb(218, 28, 0)"
   }
+
+  const emotes: Emote[] = [];
 
   // Get Settings
   useEffect(() => {
@@ -88,6 +91,7 @@ const Appearence = () => {
           messageInfo={dummyInfo}
           enablePlatformIcons={enablePlatformIcons}
           enableBadges={enableBadges}
+          emotes={emotes}
         />
       </div>
       <div className="setup-setting">

@@ -11,5 +11,10 @@ export interface MessageModel {
   subscriptionInfo? : string;
 }
 
+export interface Emote {
+  data: string; // Base64 encoded image data
+  name: string; // File name without the .webp extension
+}
+
 
 export type Badge = 'moderator' | 'vip' | 'prime' | 'turbo'

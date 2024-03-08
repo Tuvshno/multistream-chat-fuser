@@ -60,8 +60,15 @@ async function extractEmotes(page) {
 
 // eslint-disable-next-line no-undef
 const downloadsDir = path.resolve(process.argv[2], 'downloaded_emotes');
+// Ensure the directory exists
 if (!fs.existsSync(downloadsDir)) {
   fs.mkdirSync(downloadsDir, { recursive: true });
+} else {
+  // Directory exists, so first clear all files in it
+  const files = fs.readdirSync(downloadsDir);
+  for (const file of files) {
+    fs.unlinkSync(path.join(downloadsDir, file));
+  }
 }
 
 (async () => {

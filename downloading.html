@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Downloading...</title>
+  <style>
+    body {
+      font-family: Consolas, 'Courier New', Cascadia Mono, monospace;
+      background-color: #413036;
+      color: #E4E4E7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .download-container {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem;
+      background-color: #413036;
+      border-radius: 12px;
+      align-items: center;
+      overflow: hidden;
+      font-size: 16px;
+      color: #CBBEC2;
+    }
+
+    .download-header, .download-status {
+      text-align: center;
+      width: 100%;
+    }
+
+    .download-header {
+      color: #FFFFFF;
+      margin-bottom: 1rem;
+    }
+
+    .download-status {
+      background-color: #413036;
+      color: #E4E4E7;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="download-container">
+    <div class="download-header">Downloading your emotes</div>
+    <div class="download-status" id="downloadStatus">Starting download...</div>
+  </div>
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    ipcRenderer.on('update-download-status', (event, status) => {
+      document.getElementById('downloadStatus').innerText = status;
+    });
+  </script>
+</body>
+</html>

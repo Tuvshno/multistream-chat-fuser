@@ -88,6 +88,9 @@ function useLoading() {
 
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  onEmoteDownloadUpdate: (callback: (value: boolean) => void) => {
+    ipcRenderer.on('emotes-ready', (_event, value) => callback(value));
+  },
   setup: () => ipcRenderer.invoke('setup'),
   getSetupWindowSize: () => ipcRenderer.invoke('getSetupWindowSize'),
   getChatWindowSize: () => ipcRenderer.invoke('getChatWindowSize'),
@@ -97,7 +100,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveEmoteURLS: (urls: string[]) => ipcRenderer.invoke('saveEmoteURLS', urls),
   saveFontSize: (fontSize: number) => ipcRenderer.invoke('saveFontSize', fontSize),
   getUrls: () => ipcRenderer.invoke('getURLs'),
+  checkEmotesReady: () => ipcRenderer.invoke('checkEmotesReady'),
+  setEmotesReady: (isReady: boolean) => ipcRenderer.invoke('setEmotesReady', isReady),
   getEmoteUrls: () => ipcRenderer.invoke('getEmoteURLs'),
+  getEmoteFiles: () => ipcRenderer.invoke('getEmoteFiles'),
+  getEmotesJSON: () => ipcRenderer.invoke('getEmotesJSON'),
   getFontSize: () => ipcRenderer.invoke('getFontSize'),
   setSetup: (boolSetup: boolean) => ipcRenderer.invoke('setSetup', boolSetup),
   setWindowSize: (width: number, height: number) => ipcRenderer.invoke('setWindowSize', width, height),

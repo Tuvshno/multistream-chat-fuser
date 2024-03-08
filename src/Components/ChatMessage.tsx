@@ -2,6 +2,7 @@ import { MessageModel } from '../utils/models'
 import YouTubeBadge from '../assets/YT_Badge_18.png'
 import TwitchBadge from '../assets/Twitch_Badge_18.png'
 import KickBadge from '../assets/Kick_Icon.png'
+import { Emote } from '../utils/models'
 
 import { FaStar } from "react-icons/fa6";
 
@@ -12,6 +13,7 @@ type MessageProps = {
     style?: React.CSSProperties;
     enablePlatformIcons?: boolean;
     enableBadges?: boolean;
+    emotes: Emote[];
 } & React.ComponentPropsWithRef<'div'>
 
 const ChatMessage = ({
@@ -19,7 +21,8 @@ const ChatMessage = ({
     className,
     style,
     enablePlatformIcons,
-    enableBadges
+    enableBadges,
+    emotes
 }: MessageProps) => {
     const Badges = (imgSrcs ?? []).concat(badgeSvgs ?? []).map((src, i) => {
         if (typeof src === 'string' && src.startsWith('<svg')) { // Assuming badgeSvgs contain SVG markup
@@ -53,21 +56,31 @@ const ChatMessage = ({
             <span className={`message ${messageType === 'Highlighted' && 'highlighted-message'}`}>
                 {parts.map((part, index) => {
                     if (part.match(urlRegex)) {
-                        // Check if the URL points to an image, is a Twitch CDN URL, or is a YouTube image URL
-                        if (isImageUrl(part)) {
-                            // Render it as an <img> tag
-                            return <img key={index} className="message-emote" src={part} alt="" />;
-                        } else {
-                            // If the URL does not point to an image, render it as a clickable link
-                            return <a key={index} href={part} target="_blank" rel="noopener noreferrer" className="message-link">{part}</a>;
-                        }
+                        // Previously explained logic for URLs
+                        return isImageUrl(part)
+                            ? <img key={index} className="message-emote" src={part} alt="" />
+                            : <a key={index} href={part} target="_blank" rel="noopener noreferrer" className="message-link">{part}</a>;
                     } else {
-                        // If the part is text, render it as text
-                        return part;
+                        // Split the part into words to check for emote titles
+                        const words = part.split(' ').map((word, wordIndex) => {
+                            // Find the emote that matches the word
+                            const emote = emotes.find(e => e.name === word);
+                            if (emote) {
+                                // If an emote is found, replace the word with an image tag
+                                return <img key={`${index}-${wordIndex}`} src={emote.data} alt={emote.name} className="message-emote" />;
+                            } else {
+                                // If no emote is found, return the word as is
+                                return word + ' '; // Add a space for separation
+                            }
+                        });
+
+                        // Since `words` is an array of strings and React elements, we can return it directly
+                        return <span key={index}>{words}</span>;
                     }
                 })}
             </span>
-        )
+        );
+
     };
 
     // Function to extract subscriber's name and message

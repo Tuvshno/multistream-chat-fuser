@@ -3,9 +3,11 @@ import { MdOutlineEdit } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
 import { FaInfoCircle } from "react-icons/fa";
 import { MdOutlineDownloadForOffline } from "react-icons/md";
+import { Emote } from '../utils/models'
 
 import '../components/css/GeneralPage.css';
 import '../components/css/Emotes.css';
+
 
 const Emotes = () => {
   const [urls, setUrls] = useState(['']);
@@ -14,23 +16,62 @@ const Emotes = () => {
   const [isChanges, setIsChanges] = useState(false);
   const [ready, setReady] = useState(false);
 
+  const [emotesReady, setEmotesReady] = useState(false);
+  // const [emotes, setEmotes] = useState<Emote[]>([]);
+  const [emotes, setEmotes] = useState<Emote[]>([]);
+
   // const [progressMessage, setProgressMessage] = useState('');
   // const [errorMessage, setErrorMessage] = useState('');
 
-  // Get previous emote Links
   useEffect(() => {
+    // Get previous emote Links
     window.electronAPI.getEmoteUrls().then((fetchedUrls) => {
       console.log(fetchedUrls)
       setUrls(fetchedUrls.length ? fetchedUrls : ['']);
     });
+
+    //Check if emotes already downloaded
+    window.electronAPI.checkEmotesReady().then((isReady: boolean) => {
+      setEmotesReady(isReady);
+
+      if (isReady) {
+        window.electronAPI.getEmoteFiles().then((fetchedEmotes: Emote[]) => {
+          console.log(fetchedEmotes);
+          setEmotes(fetchedEmotes);
+        });
+      }
+    })
+
+    // Listen for downlaod updates
+    window.electronAPI.onEmoteDownloadUpdate((value: boolean) => {
+      setEmotesReady(value);
+      // If download was successfull
+      if (value) {
+        setIsChanges(false);
+        // Replace new emotes
+        window.electronAPI.getEmoteFiles().then((fetchedEmotes: Emote[]) => {
+          console.log(fetchedEmotes);
+          setEmotes(fetchedEmotes);
+        });
+
+        //Update checkers
+      }
+    })
   }, []);
+
+  // Using JSOn
+  // useEffect(() => {
+  //   window.electronAPI.getEmotesJSON().then((json: Emote[]) => {
+  //     console.log(json);
+  //     setEmotes(json);
+  //   })
+  // }, [emotesReady])
 
   useEffect(() => {
     // Check if all URLs are non-empty strings
     const allUrlsValid = urls.every(url => url.trim() !== '');
     setReady(allUrlsValid);
   }, [urls]);
-
 
   // Function to check and save URL changes
   const urlChanges = () => {
@@ -43,6 +84,7 @@ const Emotes = () => {
         window.electronAPI.saveEmoteURLS(urls);
       }
     });
+    window.electronAPI.setEmotesReady(false);
   };
 
   const downloadEmotes = () => {
@@ -136,21 +178,35 @@ const Emotes = () => {
             )}
           </div>
         ))}
-        <button onClick={addNewUrlField} className="setup-add-button">Add 7TV Url</button>
-        <MdOutlineDownloadForOffline onClick={downloadEmotes} className="setup-download-button" style={{ marginLeft: '10px' }} />
+        {/* <button onClick={addNewUrlField} >Add 7TV Url</button> */}
+        {(!emotesReady || isChanges) && <button onClick={downloadEmotes} className="setup-add-button">
+          Download Emotes
+          <MdOutlineDownloadForOffline className="setup-download-button" style={{ marginLeft: '10px' }} />
+        </button>
+        }
+
         {isChanges &&
           <div className="tooltip-warning">
             <FaInfoCircle style={{ marginRight: '10px' }} />
-            <span>You must restart to apply any link changes.</span>
+            <span>Redownload the your emotes for new link.</span>
           </div>
         }
-        {!isChanges && ready && <div className="ready-to-go">Emotes Linked!</div>}
+        {(!isChanges && emotesReady) && <div className="ready-to-go">Emotes Linked!</div>}
       </div>
 
       <div className="setup-setting">
         <h3 className="setup-setting-title">Emotes</h3>
         <div className="setup-setting-description">
           All the emotes you currently have.
+        </div>
+
+        <div className="emotes-container">
+          {emotes.map((emote, index) => (
+            <div key={index} className="emote-item">
+              <img src={emote.data} alt={emote.name} className="emote-image" />
+              <div className="emote-title">{emote.name}</div>
+            </div>
+          ))}
         </div>
 
       </div>
