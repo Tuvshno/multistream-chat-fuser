@@ -127,6 +127,11 @@ const Emotes = () => {
     return "transparent"; // Default case if neither
   };
 
+  const openTutorial = () => {
+    console.log('clicked tut')
+    window.electronAPI.openEmoteTutorial();
+  }
+
   // const openTutorial = () => {
   //   console.log('clicked tut')
   //   window.electronAPI.openTutorial();
@@ -138,6 +143,8 @@ const Emotes = () => {
         <h3 className="setup-setting-title">7TV Emote Linking</h3>
         <div className="setup-setting-description">
           Controls which 7TV Account Emotes you want in your chat.
+        <span className="setting-tooltip underline" onClick={openTutorial}>Tutorial</span>
+
           {/* <span className="setting-tooltip underline" onClick={openTutorial}>Tutorial</span> */}
         </div>
 

@@ -43,6 +43,7 @@ declare global {
       getToolbarEnabled: () => Promise<boolean>;
       center: () => Promise<void>;
       openTutorial: () => Promise<void>;
+      openEmoteTutorial: () => Promise<void>;
       getEmotesFromURL: (url: string) => Promise<void>;
       onEmoteDownloadUpdate: (callback: (value: boolean) => void) => void;
       // ... any other methods you have

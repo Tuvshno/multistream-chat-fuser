@@ -245,6 +245,26 @@ function createWindow() {
     return tutorialWindow;
   }
 
+  ipcMain.handle('openEmoteTutorial', async () => {
+    console.log('Opening Tutorial...')
+    createEmoteTutorialWindow();
+  })
+
+  function createEmoteTutorialWindow() {
+    const tutorialWindow = new BrowserWindow({
+      width: 850,
+      height: 650,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      }
+    });
+
+    tutorialWindow.loadFile('emoteTutorial.html');
+    tutorialWindow.setMenu(null);
+    return tutorialWindow;
+  }
+  
   ipcMain.handle('isTwitchLoggedIn', async () => {
     const cookiesTWPath = path.join(app.getPath('userData'), 'twitch-cookies.json');
 
