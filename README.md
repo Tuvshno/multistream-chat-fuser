@@ -51,7 +51,7 @@ The Multistream Chat application aggregates messages from multiple chat platform
 
 - User settings and preferences are stored in the local database, allowing for quick retrieval and application of configurations upon subsequent launches.
 
-![chat-Banner](https://github.com/Tuvshno/multistream-chat-fuser/assets/diagram.png)
+![Architecture Diagram](src/assets/diagram.png)
 
 ## Contributing to the Project
 Interested in contributing? Here's how you can help:
