@@ -10,22 +10,48 @@ Multistream Chat Fuser addresses the absence of a non-paid, multi-platform chat 
 - Customize your chat
 - Supports default emotes, subscription notifications, highlighted messages, and reply messages from Twitch.
 - Send messages directly to Twitch chats.
+- 7TV Emotes
 
 ## Upcoming Enhancements
 We're constantly working to enhance your experience. Future updates include:
 
 - Integration with additional platforms like Instagram, Facebook, and Twitter.
-- Features like Hype Trains, Bits, 7TV, BTTV, FFZ Emotes, Gifted Subs, Cash In Rewards, and more.
+- Features like Hype Trains, Bits, Gifted Subs, Cash In Rewards, and more.
 - Cross-platform message sending capabilities.
 - Enhanced interface customization including custom themes.
 - Support for YouTube-specific features like Superchats, Memberships, and Reactions.
 - Improved application lifecycle to minimize restarts.
 
 ## How to Use Multistream Chat Fuser
-1. Download: Obtain the latest release from our releases page.
-2. Start Up: Launch the application and input chat URLs from Twitch or YouTube as desired.
-3. Customize: Adjust settings and interface options to suit your preferences.
-4. Engage: Enjoy a unified chat experience across multiple platforms.
+1. Download latest release from our releases page.
+2. Launch the application.
+3. Input chat URLs in the "Chat Linking" inside "General" Tab.
+4. Input 7TV User URL in the "Emote" Tab.
+5. Adjust custom settings in the "Appearence Tab."
+6. Click "Fuse Chats"
+
+## How does it work?
+The Multistream Chat application aggregates messages from multiple chat platforms into a single interface, leveraging modern web technologies and architectural design principles for efficient real-time communication and data management.
+
+### 1. Chat Message Rendering
+
+- On application launch, the Chat Renderer initializes, sending a message to the Main Process to set up a WebSocket server and listens for that Websocket connection. The Main Process spawns Chromium worker processes for each chat service URL provided by the user.
+
+- Each worker process extracts chat messages from the DOM of the target chat service. These messages are then serialized and transmitted to the WebSocket server.
+
+- The WebSocket server receives these messages and forwards them to the Chat Renderer, where they are dynamically rendered into the unified chat interface.
+
+### 2. Settings Management and Data Persistence
+
+- The Settings Render provides an interface for the user to configure preferences and chat service URLs. Interaction with this renderer involves real-time updates to application settings and preferences.
+
+- Changes to settings are communicated to the main process via a context bridge, ensuring a secure and efficient transfer of data between renderer processes and the main application process.
+
+- The main process acts as the central coordinator, handling data flow between the Chat Renderer, Settings Renderer, and the local `%appdata%` database. It manages the persistence of user settings and application state, facilitating data retrieval and updates as required.
+
+- User settings and preferences are stored in the local database, allowing for quick retrieval and application of configurations upon subsequent launches.
+
+![chat-Banner](https://github.com/Tuvshno/multistream-chat-fuser/assets/diagram.png)
 
 ## Contributing to the Project
 Interested in contributing? Here's how you can help:
