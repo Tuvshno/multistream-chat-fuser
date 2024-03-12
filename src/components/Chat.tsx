@@ -17,6 +17,7 @@ const Chat = () => {
 
   const [enablePlatformIcons, setEnablePlatformIcons] = useState(true);
   const [enableBadges, setEnableBadges] = useState(true);
+  const [enableTimestamps, setEnableTimestamps] = useState(false);
 
   const [connected, setConnected] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -67,6 +68,11 @@ const Chat = () => {
       setEnableBadges(isEnabled);
     })
 
+    window.electronAPI.getTimestampsEnabled().then((isEnabled) => {
+      console.log(`Chat Timestamps are ${isEnabled}`)
+      setEnableTimestamps(isEnabled);
+    })
+
     // Get Emotes
     window.electronAPI.getEmoteFiles().then((fetchedEmotes: Emote[]) => {
       console.log('Fetched Emotes:', fetchedEmotes);
@@ -113,7 +119,11 @@ const Chat = () => {
         switch (message.type) {
           case 'chatMessage':
             // eslint-disable-next-line no-case-declarations
-            const newMessages: MessageModel[] = message.data;
+            const newMessages: MessageModel[] = message.data.map((msg: MessageModel) => ({
+              ...msg,
+              timestamp: new Date(), // Add the current timestamp to each message
+            }));
+          
             setMessages((prevChat) => [
               ...prevChat,
               ...newMessages
@@ -190,6 +200,7 @@ const Chat = () => {
         fontSize={fontSize}
         enablePlatformIcons={enablePlatformIcons}
         enableBadges={enableBadges}
+        enableTimestamps={enableTimestamps}
         emotes={emotes}
       />
       {!isLiveModeEnabled && (
@@ -254,9 +265,11 @@ const ChatMessagesBox = React.forwardRef<
     fontSize: number;
     enablePlatformIcons: boolean;
     enableBadges: boolean;
+    enableTimestamps: boolean;
     emotes: Emote[];
   }
->(({ messages, fontSize, enablePlatformIcons, enableBadges, emotes }, ref) => {
+>(({ messages, fontSize, enablePlatformIcons, enableBadges, enableTimestamps, emotes }, ref) => {
+
   const MessageList = messages.map((messageInfo) => (
     <ChatMessage
       key={messageInfo.id}
@@ -264,6 +277,7 @@ const ChatMessagesBox = React.forwardRef<
       messageInfo={messageInfo}
       enablePlatformIcons={enablePlatformIcons}
       enableBadges={enableBadges}
+      enableTimestamps={enableTimestamps}
       style={{ fontSize: `${fontSize}px` }}
       emotes={emotes}
     />

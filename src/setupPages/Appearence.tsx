@@ -9,6 +9,7 @@ const Appearence = () => {
   const [enablePlatformIcons, setEnablePlatformIcons] = useState(true);
   const [enableBadges, setEnableBadges] = useState(true);
   const [enableToolbar, setEnableToolbar] = useState(true);
+  const [enableTimestamps, setEnableTimestamps] = useState(true);
 
   const dummyInfo = {
     "id": "1",
@@ -17,7 +18,8 @@ const Appearence = () => {
     "authorName": "Username",
     "message": "This is what a chat message will look like",
     "imgSrcs": ["https://static-cdn.jtvnw.net/badges/v1/4b76d5f2-91cc-4400-adf2-908a1e6cfd1e/1"],
-    "authorColor": "rgb(218, 28, 0)"
+    "authorColor": "rgb(218, 28, 0)",
+    "timestamp" : new Date()
   }
 
   const emotes: Emote[] = [];
@@ -39,6 +41,10 @@ const Appearence = () => {
     //Set Previous Toolbar Setting 
     window.electronAPI.getToolbarEnabled().then((isEnabled) => {
       setEnableToolbar(isEnabled);
+    });
+    //Set Previous Timestamps Setting 
+    window.electronAPI.getTimestampsEnabled().then((isEnabled) => {
+      setEnableTimestamps(isEnabled);
     });
   }, []);
 
@@ -75,6 +81,12 @@ const Appearence = () => {
     setEnableToolbar(!enableToolbar);
   };
 
+  const toggleTimestamps = () => {
+    console.log('toggleTimestamps checkbox clicked')
+    window.electronAPI.saveTimestampsEnabled(!enableTimestamps);
+    setEnableTimestamps(!enableTimestamps);
+  };
+
   return (
     <div>
       <div className="setup-setting">
@@ -86,13 +98,52 @@ const Appearence = () => {
           style={{
             fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
             fontSize: `${fontSize}px`,
-
+            backgroundColor: '#18181B',
+            color: 'white'
           }}
           messageInfo={dummyInfo}
           enablePlatformIcons={enablePlatformIcons}
           enableBadges={enableBadges}
+          enableTimestamps={enableTimestamps}
           emotes={emotes}
         />
+      </div>
+
+      <div className="setup-setting">
+        <h3 className="setup-setting-title">Badges</h3>
+        <div className="setup-setting-description">
+          Controls whether to show badges.
+        </div>
+        <div className="platform-icons-toggle">
+
+          <input
+            className="styled-checkbox"
+            id="enableBadges"
+            type="checkbox"
+            checked={enableBadges}
+            onChange={toggleBadges}
+          />
+          <label htmlFor="enableBadges">Enable badges</label>
+
+        </div>
+      </div>
+      <div className="setup-setting">
+        <h3 className="setup-setting-title">Developer Tools</h3>
+        <div className="setup-setting-description">
+          Controls whether to show Windows Toolbar
+        </div>
+        <div className="platform-icons-toggle">
+
+          <input
+            className="styled-checkbox"
+            id="enableToolbar"
+            type="checkbox"
+            checked={enableToolbar}
+            onChange={toggleToolbar}
+          />
+          <label htmlFor="enableToolbar">Enable Developer Tools</label>
+
+        </div>
       </div>
       <div className="setup-setting">
         <h3 className="setup-setting-title">Font Size</h3>
@@ -122,38 +173,20 @@ const Appearence = () => {
         </div>
       </div>
       <div className="setup-setting">
-        <h3 className="setup-setting-title">Badges</h3>
+        <h3 className="setup-setting-title">Timestamps</h3>
         <div className="setup-setting-description">
-          Controls whether to show badges.
+          Shows when a message was sent.
         </div>
         <div className="platform-icons-toggle">
 
           <input
             className="styled-checkbox"
-            id="enableBadges"
+            id="enableTimestamps"
             type="checkbox"
-            checked={enableBadges}
-            onChange={toggleBadges}
+            checked={enableTimestamps}
+            onChange={toggleTimestamps}
           />
-          <label htmlFor="enableBadges">Enable badges</label>
-
-        </div>
-      </div>
-      <div className="setup-setting">
-        <h3 className="setup-setting-title">Enable Developer Tools</h3>
-        <div className="setup-setting-description">
-          Controls whether to show Windows Toolbar
-        </div>
-        <div className="platform-icons-toggle">
-
-          <input
-            className="styled-checkbox"
-            id="enableToolbar"
-            type="checkbox"
-            checked={enableToolbar}
-            onChange={toggleToolbar}
-          />
-          <label htmlFor="enableToolbar">Enable Developer Tools</label>
+          <label htmlFor="enableTimestamps">Enable timestamps</label>
 
         </div>
       </div>

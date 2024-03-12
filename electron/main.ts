@@ -225,6 +225,16 @@ function createWindow() {
     return isEnabled;
   });
 
+  ipcMain.handle('saveTimestampsEnabled', async (_event, isEnabled) => {
+    console.log(`isTimestampsEnabled is ${isEnabled}`)
+    store.set('isTimestampsEnabled', isEnabled);
+  });
+  ipcMain.handle('getTimestampsEnabled', async () => {
+    const isEnabled = store.get('isTimestampsEnabled', false);
+    console.log(`isTimestampsEnabled is ${isEnabled}`)
+    return isEnabled;
+  });
+
   ipcMain.handle('openTutorial', async () => {
     console.log('Opening Tutorial...')
     createTutorialWindow();

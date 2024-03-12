@@ -9,6 +9,7 @@ export interface MessageModel {
   authorColor: string;
   replyingTo?: string;
   subscriptionInfo? : string;
+  timestamp: Date;
 }
 
 export interface Emote {

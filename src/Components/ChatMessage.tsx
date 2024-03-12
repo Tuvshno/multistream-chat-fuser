@@ -13,16 +13,18 @@ type MessageProps = {
     style?: React.CSSProperties;
     enablePlatformIcons?: boolean;
     enableBadges?: boolean;
+    enableTimestamps?: boolean;
     emotes: Emote[];
 } & React.ComponentPropsWithRef<'div'>
 
 const ChatMessage = ({
-    messageInfo: { platform, messageType, authorName, message, imgSrcs, badgeSvgs, authorColor, replyingTo, subscriptionInfo },
+    messageInfo: { platform, messageType, authorName, message, imgSrcs, badgeSvgs, authorColor, replyingTo, subscriptionInfo, timestamp },
     className,
     style,
     enablePlatformIcons,
     enableBadges,
-    emotes
+    enableTimestamps,
+    emotes,
 }: MessageProps) => {
     const Badges = (imgSrcs ?? []).concat(badgeSvgs ?? []).map((src, i) => {
         if (typeof src === 'string' && src.startsWith('<svg')) { // Assuming badgeSvgs contain SVG markup
@@ -82,7 +84,17 @@ const ChatMessage = ({
         );
 
     };
-
+    const formatMessageTime = (timestamp: Date) => {
+        let hours = timestamp.getHours();
+        const minutes = timestamp.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+    
+        return `${hours}:${minutesStr} ${ampm}`;
+    }
+    
     // Function to extract subscriber's name and message
     const renderSubscriptionInfo = (info: string) => {
         const [name, ...messageParts] = info.split(' ');
@@ -124,6 +136,7 @@ const ChatMessage = ({
                 }
             </div>
             :
+            // {NORMAL MESSAGE}
             <div
                 className={
                     `message-container 
@@ -140,6 +153,7 @@ const ChatMessage = ({
                 )}
 
                 <div className="chat-message-info">
+                    {enableTimestamps && <div className='timestamp'>{formatMessageTime(timestamp)}</div>}
                     {enablePlatformIcons && (platform === 'YouTube' ?
                         <img src={YouTubeBadge} alt="YouTube Badge" className='message-badge' /> :
                         (platform === 'Twitch' ?

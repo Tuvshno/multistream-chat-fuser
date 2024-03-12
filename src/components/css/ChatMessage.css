@@ -89,3 +89,9 @@
   font-weight: bold;
   display: flex;
 }
+
+.timestamp {
+  font-weight: lighter;
+  color: rgb(153,153,153);
+  margin-right: 10px;
+}
