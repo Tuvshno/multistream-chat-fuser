@@ -85,10 +85,9 @@ const General = () => {
       <div className="setup-setting">
         <h2 className="setup-setting-title">General</h2>
         <div className="setup-setting-description">
-          Multistream Chat Fuser utilies Chat Popouts from different stream platforms in order to create a unified streaming interface.
+          Multistream Chat Fuser utilizes Chat Popouts from different stream platforms in order to create a unified streaming interface.
           We do not connect to any external API and run entirely locally. Therefore as the user, you have complete control over the
-          chats that you want to connect together. But this comes with a cost! The more chats you link together, the more memory you
-          take up on your computer!
+          chats that you want to connect together.
         </div>
       </div>
       <div className="setup-setting">

@@ -25,6 +25,7 @@ const Version = () => {
                     <li>Highlighted Messages from Twitch</li>
                     <li>Reply Messages from Twitch</li>
                     <li>Send Chat Messages to Twitch Chat</li>
+                    <li>7TV Emotes</li>
                   </ul>
                 </td>
               </tr>
@@ -47,7 +48,7 @@ const Version = () => {
                     <li>Instagram, Facebook, and Twitter</li>
                     <li>Hype Trains</li>
                     <li>Bits</li>
-                    <li>7TV, BTTV, FFZ Emotes</li>
+                    <li>BTTV, FFZ Emotes</li>
                     <li>Gifted Subs</li>
                     <li>Cash In Rewards</li>
                     <li>Send Chat Messages to other platforms</li>
