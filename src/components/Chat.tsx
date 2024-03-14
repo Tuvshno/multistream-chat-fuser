@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import useChatLiveModeScrolling from '../hooks/useChatLiveModeScrolling'
-import { MessageModel, Emote } from '../utils/models'
+import { MessageModel, Emote, DonationModel } from '../utils/models'
 import ChatMessage from './ChatMessage'
 import ChatPausedAlert from './ChatPausedAlert'
 import SendMessageForm from './SendMessageForm'
@@ -13,8 +13,9 @@ const Chat = () => {
   const webSocketRef = useRef<WebSocket | null>(null);
 
   const [messages, setMessages] = useState<MessageModel[]>([]);
-  const [fontSize, setFontSize] = useState<number>(14);
+  const [donations, setDonations] = useState<DonationModel[]>([]);
 
+  const [fontSize, setFontSize] = useState<number>(14);
   const [enablePlatformIcons, setEnablePlatformIcons] = useState(true);
   const [enableBadges, setEnableBadges] = useState(true);
   const [enableTimestamps, setEnableTimestamps] = useState(false);
@@ -36,6 +37,7 @@ const Chat = () => {
 
 
   const MAX_MESSAGES = 1000;
+  const MAX_DONATIONS = 500;
 
   const { chatMessagesBoxRef, isLiveModeEnabled, scrollNewMessages } =
     useChatLiveModeScrolling<HTMLDivElement>(messages)
@@ -123,11 +125,22 @@ const Chat = () => {
               ...msg,
               timestamp: new Date(), // Add the current timestamp to each message
             }));
-          
+
             setMessages((prevChat) => [
               ...prevChat,
               ...newMessages
             ].slice(-MAX_MESSAGES)); // Keep only the last MAX_MESSAGES messages
+            break;
+          case 'SuperChat':
+            // eslint-disable-next-line no-case-declarations
+            const newDonations: DonationModel[] = message.data.map((donation: DonationModel) => ({
+              ...donation,
+            }));
+
+            setDonations((prevDonation) => [
+              ...prevDonation,
+              ...newDonations
+            ].slice(-MAX_DONATIONS)); // Keep only the last MAX_MESSAGES messages
             break;
           case 'error':
             console.log("Error loading chat for URL:", message.errorUrl);
@@ -197,6 +210,7 @@ const Chat = () => {
       <ChatMessagesBox
         ref={chatMessagesBoxRef}
         messages={messages}
+        donations={donations}
         fontSize={fontSize}
         enablePlatformIcons={enablePlatformIcons}
         enableBadges={enableBadges}
@@ -262,13 +276,14 @@ const ChatMessagesBox = React.forwardRef<
   HTMLDivElement,
   {
     messages: MessageModel[];
+    donations: DonationModel[];
     fontSize: number;
     enablePlatformIcons: boolean;
     enableBadges: boolean;
     enableTimestamps: boolean;
     emotes: Emote[];
   }
->(({ messages, fontSize, enablePlatformIcons, enableBadges, enableTimestamps, emotes }, ref) => {
+>(({ messages, donations, fontSize, enablePlatformIcons, enableBadges, enableTimestamps, emotes }, ref) => {
 
   const MessageList = messages.map((messageInfo) => (
     <ChatMessage
@@ -283,8 +298,18 @@ const ChatMessagesBox = React.forwardRef<
     />
   ))
 
+  // const DonationCards = donations.map((donation) => (
+  //   <div key={donation.timestamp} className="donation-card">
+  //     <span className="author-name">{donation.authorName}</span>
+  //     <span className="purchase-amount">{donation.purchaseAmount}</span>
+  //   </div>
+  // ))
+
   return (
     <div ref={ref} className="chat-message-box">
+      {/* <div className="donations-list">
+        {DonationCards}
+      </div> */}
       {MessageList}
     </div>
   )

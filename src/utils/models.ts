@@ -8,8 +8,19 @@ export interface MessageModel {
   badgeSvgs?: string[];
   authorColor: string;
   replyingTo?: string;
-  subscriptionInfo? : string;
+  subscriptionInfo?: string;
   timestamp: Date;
+}
+
+export interface DonationModel {
+  platform: string;
+  messageType: string;
+  authorName: string;
+  message: string;
+  purchaseAmount: string;
+  timestamp: string;
+  gradient: string;
+  authorPhotoSrc: string;
 }
 
 export interface Emote {

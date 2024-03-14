@@ -15,6 +15,59 @@ let pageData;
 
 console.log('Looking for Client Connection...')
 
+async function getYouTubeSuperChatData(page) {
+  const superChatData = await page.evaluate(() => {
+    // Only select items that have not yet been marked as processed
+    const items = Array.from(document.querySelectorAll('yt-live-chat-ticker-paid-message-item-renderer:not(.processed)'));
+    return items.map(item => {
+      console.log('checking superchat')
+      const messageType = 'SuperChat';
+      const platform = 'YouTube';
+
+      // Mark the item as processed to hide it and avoid re-processing
+      item.classList.add('processed');
+      // Optionally hide the item by setting its display style to none
+      item.style.display = 'none';
+
+      // Trigger the click to open the super chat message details
+      item.click();
+
+      // Assuming there's a brief delay needed for the popup to appear and render fully
+      const detailsSelector = 'yt-live-chat-paid-message-renderer';
+      const details = document.querySelector(detailsSelector);
+      
+      // Ensure the super chat details are loaded
+      if (!details) {
+        return { platform, messageType, message: 'Loading error or message details unavailable' };
+      }
+
+      // Extract the author name, message, and amount directly from the details popup
+      const authorName = details.querySelector('#author-name')?.textContent.trim() || 'Anonymous';
+      const message = details.querySelector('#message')?.textContent.trim() || 'Message content not found';
+      const purchaseAmount = details.querySelector('#purchase-amount')?.textContent.trim() || 'Amount not specified';
+
+      // Extract additional data like timestamps, if needed
+      const timestamp = details.querySelector('#timestamp')?.textContent.trim() || 'Timestamp not available';
+
+      // Construct the color gradient for super chats based on their amount or importance
+      const gradient = details.querySelector('#header')?.style.background || 'Linear gradient not found';
+
+      // You can also extract the author's image URL
+      const authorPhotoSrc = details.querySelector('#author-photo img')?.src || '';
+
+      // Clean up by closing the super chat details to ready the page for the next one, if necessary
+      // This step depends on how your page/environment handles super chat detail popups
+      // For example, if there's a close button, click it
+      const fadeElement = document.querySelector('#fade');
+        fadeElement.click(); // Simulate a click on the fade element
+        
+      return { platform, messageType, authorName, message, purchaseAmount, timestamp, gradient, authorPhotoSrc };
+    });
+  });
+  return superChatData;
+}
+
+
 async function getYouTubePageData(page) {
   const chatData = await page.evaluate(() => {
     let messageType = 'Message'
@@ -239,7 +292,7 @@ wss.on('connection', function connection(ws) {
       activeBrowser = null; // Reset the activeBrowser variable
     }
 
-    activeBrowser = await puppeteer.launch({ headless: "new" });
+    activeBrowser = await puppeteer.launch({ headless: false });
     // const pages = [await activeBrowser.newPage(), await activeBrowser.newPage(), await activeBrowser.newPage()];
 
     // eslint-disable-next-line no-undef
@@ -419,11 +472,29 @@ wss.on('connection', function connection(ws) {
 
         const chatDataArrays = await Promise.all(chatDataPromises);
 
-
+        // Send Chat Messages
         chatDataArrays.forEach((chatData, index) => {
           chatData = chatData.reverse();
           if (!isFirstFetch && chatData.length > 0) {
             ws.send(JSON.stringify({ type: 'chatMessage', url: USER_URLS[index], data: chatData }));
+          }
+        });
+
+        // Get Donations
+        const chatDonationPromises = pageData.map(data => {
+          if (data.selector.includes('yt-live-chat-item-list-renderer')) {
+            return getYouTubeSuperChatData(data.page);
+          }
+        });
+
+        const chatDonations = await Promise.all(chatDonationPromises);
+
+        // Send Donations
+        chatDonations.forEach((chatDonation, index) => {
+          chatDonation = chatDonation.reverse();
+          if (!isFirstFetch && chatDonation.length > 0) {
+            console.log(chatDonation)
+            ws.send(JSON.stringify({ type: 'donation', url: USER_URLS[index], data: chatDonation }));
           }
         });
 
