@@ -12,16 +12,6 @@ Multistream Chat Fuser addresses the absence of a non-paid, multi-platform chat 
 - Send messages directly to Twitch chats.
 - 7TV Emotes
 
-## Upcoming Enhancements
-We're constantly working to enhance your experience. Future updates include:
-
-- Integration with additional platforms like Instagram, Facebook, and Twitter.
-- Features like Hype Trains, Bits, Gifted Subs, Cash In Rewards, and more.
-- Cross-platform message sending capabilities.
-- Enhanced interface customization including custom themes.
-- Support for YouTube-specific features like Superchats, Memberships, and Reactions.
-- Improved application lifecycle to minimize restarts.
-
 ## How to Use Multistream Chat Fuser
 1. Download latest release from our releases page.
 2. Launch the application.
